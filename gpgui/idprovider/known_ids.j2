@@ -1,0 +1,17 @@
+from .str_with_children import StrWithChildren
+
+class KnownIds():
+    ...
+    {%set items = id_tree.items()%}
+    {% for id, values in items recursive %}
+
+    {% if '_children' in values %}
+    class _{{values['_name'] }}(StrWithChildren):
+    {{loop(values['_children'].items()) | indent(4)}}
+    {{values['_name']}}: _{{values['_name']}}
+
+    {%else %}
+    {{values['_name']}}: StrWithChildren
+
+    {% endif %}
+    {% endfor %}
