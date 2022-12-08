@@ -13,6 +13,7 @@ def navbar():
         dbc.NavItem(dbc.NavLink(f"{page['name']}", href=page["relative_path"]))
         for i, page in enumerate(dash.page_registry.values())
     ]
+
     return dbc.Navbar(
         dbc.Container(
             [

@@ -1,3 +1,6 @@
+
+console.log("Loading midi.js");
+
 navigator.requestMIDIAccess().then((midiAccess) => {
     console.log(Array.from(midiAccess.inputs));
     let key = input => input[1].name === "Midi Fighter Twister"

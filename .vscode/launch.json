@@ -13,27 +13,11 @@
             "justMyCode": true
         },
         {
-            "name": "dash",
-            "type": "python",
-            "request": "launch",
-            "program": "${workspaceFolder}/dash_server/dash_server.py",
-            "preLaunchTask": "quart server",
-            "justMyCode": true,
-        },
-        {
-            "name": "quart",
-            "type": "python",
-            "request": "launch",
-            "program": "${workspaceFolder}/quart_server/quart_server.py",
-            "cwd": "${workspaceFolder}/quart_server",
-            // "preLaunchTask": "quart server",
-            "justMyCode": true,
-        },
-        {
             "name": "run",
             "type": "python",
             "request": "launch",
-            "program": "/workspaces/gpgui/gpgui/dash_server.py",
+            "program": "${workspaceFolder}/test_project/hello.py",
+            "cwd": "${workspaceFolder}/test_project",
             "justMyCode": false,
         },
     ]
