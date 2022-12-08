@@ -1,1 +1,1 @@
-from idprovider import idp
+from .idprovider import IdProvider as idp

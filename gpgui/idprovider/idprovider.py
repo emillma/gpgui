@@ -1,45 +1,40 @@
-import re
-import time
 from pathlib import Path
-from inspect import currentframe, getframeinfo
-from collections import OrderedDict
 import jinja2
 from black import format_str, FileMode
-
+import re
 from .str_with_children import StrWithChildren
 from .known_ids import KnownIds
 
 
-THIS_DIR = Path(__file__).parent
-FILENAME = "known_ids"
+class MetaIdProvider(type):
+    """Metaclass for IdProvider."""
 
-
-class IdProvider(KnownIds):
-    """Class used to avoid littering code with id strings"""
-
-    locations = {}
-
-    def register_return(self, item):
+    def __getattr__(cls, item):
         """Return the item."""
-        frame = getframeinfo(currentframe().f_back.f_back)
-        loc = f"{frame.filename}:{frame.lineno}"
-        self.locations.setdefault(item, OrderedDict())[loc] = time.time()
-        return StrWithChildren(item, self.register_return, self.get_position)
 
-    def get_position(self, item) -> set:
-        return self.locations[item]
-
-    def __getattr__(self, item):
         if re.match("__.*__", item):
             raise AttributeError(item)
-        return self.register_return(item)
+        return cls.register_return(item)
 
-    def get_tree(self):
+
+class IdProvider(KnownIds, metaclass=MetaIdProvider):
+    """Class used to avoid littering code with id strings"""
+
+    ids: set[str] = set()
+
+    @classmethod
+    def register_return(cls, item):
+        """Return the item."""
+        cls.ids.add(item)
+        return StrWithChildren(item, cls)
+
+    @classmethod
+    def get_tree(cls):
         """Get a tree of the known IDs."""
         tree = {}
-        for id_ in self.locations:
+        for id_ in cls.ids:
             parts = id_.split(".")
-            current = tree.setdefault(parts[0], {})
+            current: dict = tree.setdefault(parts[0], {})  # type: ignore
             for part in parts[1:]:
                 current = current.setdefault("_children", {}).setdefault(part, {})
 
@@ -48,16 +43,20 @@ class IdProvider(KnownIds):
 
         return tree
 
-    def generate_code(self):
+    @classmethod
+    def generate_code(cls):
         """Generate code for the known IDs."""
+        this_dir = Path(__file__).parent
+        fname = "known_ids"
+
         env = jinja2.Environment(
-            loader=jinja2.FileSystemLoader(THIS_DIR),
+            loader=jinja2.FileSystemLoader(this_dir),
             lstrip_blocks=True,
             trim_blocks=True,
             undefined=jinja2.StrictUndefined,
         )
-        template = env.get_template(f"{FILENAME}.j2")
-        tree = self.get_tree()
+        template = env.get_template(f"{fname}.j2")
+        tree = cls.get_tree()
         content = template.render(id_tree=tree)
         content = format_str(content, mode=FileMode(preview=True))
-        THIS_DIR.joinpath(f"{FILENAME}.py").write_text(content)
+        this_dir.joinpath(f"{fname}.py").write_text(content)

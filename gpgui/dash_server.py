@@ -10,8 +10,11 @@ from dash import html, dcc, Dash
 from async_dash import Dash
 from dash_extensions.enrich import html, dcc
 
-from gpgui.idprovider import idp
+from gpgui import idp
 from gpgui.layout import stylesheets, navbar, configure_plotly
+from quart import websocket, json
+import asyncio
+import random
 
 configure_plotly()
 app = Dash(
@@ -30,9 +33,12 @@ app.layout = html.Div(
 )
 
 
-@app.server.route("/favicon.ico")
-async def favicon():
-    return {"hello": "world"}
+@app.server.websocket("/ws")
+async def ws():
+    while True:
+        output = json.dumps([random.randint(200, 1000) for _ in range(6)])
+        await websocket.send(output)
+        await asyncio.sleep(1)
 
 
 def run():
@@ -48,6 +54,11 @@ def run():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, use_reloader=True, port=8050)
+    idp.a
+    idp.b
+    idp.b.c
+    idp.a.b.c
+    idp.generate_code()
+    # app.run(debug=True, use_reloader=True, port=8050)
 
-    run()
+    # run()
