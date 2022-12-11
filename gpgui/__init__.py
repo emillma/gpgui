@@ -7,3 +7,5 @@ from dash_extensions.enrich import html
 from .idprovider import IdProvider as idp
 from .utils import inspect
 from ._mydash import MyDash
+
+from .cbtools.cbmanager import CbManager

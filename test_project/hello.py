@@ -51,7 +51,7 @@ dash_app = get_dash_app(layout, name=__name__)
 #     dash_logger.error("Some error occurred")
 #     return f"Run number {n_clicks} completed"
 
-
+print(type(idp.hello.apekatt))
 idp.generate_code()
 dash_app.run(
     debug=True, use_reloader=False, dev_tools_hot_reload_max_retry=3, port=8050

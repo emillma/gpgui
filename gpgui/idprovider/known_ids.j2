@@ -10,7 +10,8 @@ class KnownIds():
 
     {% if '_children' in values %}
     class _{{values['_name'] }}(StrWithChildren):
-    {{loop(values['_children'].items()) | indent(4)}}
+        {{loop(values['_children'].items()) | indent(4)}}
+
     {{values['_name']}}: _{{values['_name']}}
 
     {%else %}

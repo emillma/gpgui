@@ -2,8 +2,8 @@ from pathlib import Path
 import jinja2
 from black import format_str, FileMode
 import re
-from .str_with_children import StrWithChildren
 from .known_ids import KnownIds
+from .str_with_children import StrWithChildren
 
 
 class MetaIdProvider(type):

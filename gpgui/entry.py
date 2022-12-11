@@ -1,5 +1,5 @@
 from typing import Callable
-from gpgui import MyDash
+from gpgui import MyDash, CbManager
 
 # from gpgui.layout import navbar, page_container
 import gpgui
@@ -16,7 +16,7 @@ def get_dash_app(layout: Callable, name="__main__"):
     dash_app = MyDash(
         name,
         external_stylesheets=[
-            # "extra_assets/style.css",
+            "extra_assets/style.css",
             # "extra_assets/sandstone.css",
         ],
         external_scripts=["extra_assets/midi.js"],
@@ -25,6 +25,7 @@ def get_dash_app(layout: Callable, name="__main__"):
     )
 
     dash_app.layout = layout()
+    CbManager.register(dash_app)
 
     @dash_app.server.route("/extra_assets/<path:path>")
     async def extra_assets(path):
