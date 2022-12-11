@@ -25,5 +25,9 @@ fig = px.scatter(
 )
 
 layout = html.Div(
-    [dcc.Markdown("hello world"), WebSocket(id="ws"), dcc.Graph(id="graph", figure=fig)]
+    [
+        dcc.Markdown("hello world"),
+        WebSocket(id="ws"),
+        dcc.Graph(id="graph", figure=fig),
+    ]
 )

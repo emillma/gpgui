@@ -1,5 +1,7 @@
 import re
 from plotly.basedatatypes import BasePlotlyType
+from functools import cache
+from plotly.graph_objs.layout import Template
 
 
 def get_props_all(obj: BasePlotlyType, max_depth=-1):
@@ -38,9 +40,9 @@ def set_prop_recursive(obj, attr: str, value):
         setattr(obj, post, value)
 
 
-def get_props_matching(obj: BasePlotlyType, key: str, regex=False):
+def get_props(obj: BasePlotlyType, key: str = "*", regex=False):
     valid_props = list(get_props_all(obj))
-    key = key if not regex else key.replace("*", ".*").replace(".", r"\.")
+    key = key if regex else key.replace("*", ".*").replace(".", r"\.")
     matchings = []
     for prop in valid_props:
         if re.search(key, prop):
@@ -48,8 +50,9 @@ def get_props_matching(obj: BasePlotlyType, key: str, regex=False):
     return matchings
 
 
-def set_props_matching(obj: BasePlotlyType, key: str, value, regex=False):
-    matching = get_props_matching(obj, key, regex)
+def set_props(obj: BasePlotlyType, key: str, value, regex=False):
+    matching = get_props(obj, key, regex)
+    assert matching, f"No matching props found for {key}"
     for prop in matching:
         set_prop_recursive(obj, prop, value)
     return matching

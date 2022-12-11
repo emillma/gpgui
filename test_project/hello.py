@@ -4,13 +4,18 @@ from gpgui.cbtools import Output, Input, DashLogger
 from gpgui.layout import navbar, page_container, configure_plotly
 from gpgui.entry import get_dash_app
 from datetime import date
+from gpgui.layout import colors
 
 configure_plotly()
 
 
 def layout():
     return dmc.MantineProvider(
-        theme={"colorScheme": "dark", "fontFamily": "'Inter', sans-serif"},
+        theme=dict(
+            colorScheme="dark",
+            colors=colors.DEFAULT_COLORS,
+            fontFamily="'Inter', sans-serif",
+        ),
         withGlobalStyles=True,
         withNormalizeCSS=True,
         children=dmc.Paper(
