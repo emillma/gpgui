@@ -4,17 +4,16 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "dash app",
+            "label": "proxy",
             "type": "shell",
-            "command": "cd src/gui && python3 dash_app.py",
-            "command": "cd dash_server && flask --app quart_server.py --debug run",
+            "command": "gpgui_proxy",
             "problemMatcher": []
         },
         {
-            "label": "quart server",
+            "label": "dash",
             "type": "shell",
-            "command": "cd quart_server && quart --app quart_server.py --debug run",
+            "command": "gpgui_proxy",
             "problemMatcher": []
-        }
+        },
     ],
 }

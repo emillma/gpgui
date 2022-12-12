@@ -1,16 +1,17 @@
-from typing import Callable
-from inspect import signature
+from typing import Callable, TYPE_CHECKING
+from inspect import signature, iscoroutinefunction
 from dataclasses import dataclass
 
-from gpgui import MyDash
 from gpgui.cbtools import Input, Output, State
-from typing import Union
+
+if TYPE_CHECKING:
+    from gpgui import MyDash
 
 
 @dataclass
 class PyCallback:
     func: Callable
-    inputs: dict[str, Input, State]
+    inputs: dict[str, Input | State]
     outputs: list[Output]
 
 
@@ -30,14 +31,20 @@ class CbManager:
     @classmethod
     def callback(cls, output):
         def decorator(func):
-            inputs = {k: v.default for k, v in signature(func).parameters.items()}
+            params = signature(func).parameters
+            inputs = {k: v.default for k, v in params.items()}
+            assert iscoroutinefunction(func)
+
+            async def inner(**kwargs):
+                return func(**kwargs)
+
             cls.pycallbacks.append(PyCallback(func, inputs, output))
-            return func
+            return inner
 
         return decorator
 
     @classmethod
-    def register(cls, dash_app: MyDash):
+    def register(cls, dash_app: "MyDash"):
         for pycb in cls.pycallbacks:
             dash_app.callback(output=pycb.outputs, inputs=pycb.inputs)(pycb.func)
             # if len(args) == 1:

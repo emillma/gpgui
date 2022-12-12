@@ -23,14 +23,7 @@ def layout():
                 grow=True,
                 direction="column",
                 children=[
-                    dcc.Markdown("Analytics"),
                     page_container(),
-                    dmc.DatePicker(
-                        style={"width": 200},
-                        label="Select Date",
-                        value=date.today(),
-                    ),
-                    dmc.Alert("This is an alert!", title="An Alert", color="red"),
                 ],
             ),
             p="xl",
@@ -41,6 +34,7 @@ def layout():
 
 dash_app = get_dash_app(layout, name=__name__)
 
+app = dash_app.server
 
 # @dash_app.callback(Output("txt", "children"), Input("btn", "n_clicks"), log=True)
 # def do_stuff(n_clicks, dash_logger: DashLogger):
@@ -54,5 +48,10 @@ dash_app = get_dash_app(layout, name=__name__)
 print(type(idp.hello.apekatt))
 idp.generate_code()
 dash_app.run(
-    debug=True, use_reloader=False, dev_tools_hot_reload_max_retry=3, port=8050
+    debug=True,
+    use_reloader=False,
+    # dev_tools_hot_reload_interval=1,
+    # dev_tools_hot_reload_max_retry=1,
+    dev_tools_hot_reload=False,
+    port=8050,
 )

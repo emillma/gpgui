@@ -16,6 +16,8 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     python_requires=">=3.10",
     entry_points={
-        "console_scripts": ["handoutgen=handoutgen.command_line:call"],
+        "console_scripts": [
+            "gpgui_proxy=gpgui.proxy.app:run",
+        ],
     },
 )
