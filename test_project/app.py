@@ -15,9 +15,10 @@ def layout():
             colorScheme="dark",
             colors=colors.DEFAULT_COLORS,
             fontFamily="'Inter', sans-serif",
+            # fontSize="sm",
         ),
         withGlobalStyles=True,
-        withNormalizeCSS=True,
+        # withNormalizeCSS=True,
         children=dmc.Paper(
             dmc.Group(
                 grow=True,

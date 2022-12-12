@@ -34,22 +34,9 @@ def get_dash_app(layout: Callable[[], html.Div], name="__main__"):
         pages_folder="pages",
     )
 
-    dash_app.layout = html.Div(
-        [
-            layout(),
-            # WebSocket(id=idp.watchdog, url="ws://127.0.0.1:8050/watchdog"),
-        ]
-    )
+    dash_app.layout = layout()
 
     cbm.register(dash_app)
-
-    # @dash_app.callback(
-    #     Output(idp.watchdog, "send"),
-    #     Input(idp.watchdog, "message"),
-    # )
-    # async def watchdog(msg):
-    #     # print(msg)
-    #     return msg
 
     @dash_app.server.route("/extra_assets/<path:path>")
     async def extra_assets(path):
@@ -58,12 +45,5 @@ def get_dash_app(layout: Callable[[], html.Div], name="__main__"):
     @dash_app.server.route("/hartbeat")
     async def hartbeat():
         return "", 200
-
-    # @dash_app.server.websocket("/watchdog")
-    # async def watchdog_socket():
-    #     while True:
-    #         output = f"hello {time.time()}"
-    #         await websocket.send(output)
-    #         await asyncio.sleep(1)
 
     return dash_app

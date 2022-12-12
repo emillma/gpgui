@@ -17,19 +17,20 @@ layout = html.Div(
             id=idp.text_area,
             label="Autosize with no rows limit",
             placeholder="Autosize with no rows limit",
-            style={"width": 500},
+            # style={"width": "md"},
+            # size="lg",
             autosize=True,
             minRows=6,
             maxRows=6,
             value="hello\n" * 10,
         ),
         EventListener(
-            html.Div("Click here!", className="stuff"),
+            dmc.Text("Click here! 1234"),
             events=[events.click.edict()],
             logging=True,
             id=idp.el,
         ),
-        html.Div(id=idp.log),
+        dcc.Markdown(id=idp.log, mathjax=True),
     ]
 )
 
@@ -39,8 +40,8 @@ layout = html.Div(
 #     return value
 
 
-# @cbm.callback(idp.log.output("children"))
-# async def click_event(e: events.click = idp.el.input("event")):
-#     if e is None:
-#         raise exceptions.PreventUpdate()
-#     return json.dumps(e, indent=2)
+@cbm.callback(idp.log.output("children"))
+async def click_event(e: events.click = idp.el.input("event")):
+    if e is None:
+        raise exceptions.PreventUpdate()
+    return json.dumps(e, indent=2)
