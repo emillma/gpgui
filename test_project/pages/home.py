@@ -1,7 +1,7 @@
 """analytics"""
 from typing import TypeVar
 import dash
-from gpgui import dcc, html, dmc, idp, EventListener, exceptions
+from gpgui import dcc, html, dmc, idp, EventListener, exceptions, colors
 from gpgui.cbtools import cbm, events
 import json
 
@@ -10,7 +10,7 @@ dash.register_page(__name__, path="/")
 
 event = {"event": "click", "props": ["type", "timeStamp", "target.children"]}
 
-layout = html.Div(
+layout = dmc.Stack(
     [
         dmc.TextInput(id=idp.text_input, placeholder="Enter a value...", value=""),
         dmc.Textarea(
@@ -25,13 +25,26 @@ layout = html.Div(
             value="hello\n" * 10,
         ),
         EventListener(
-            dmc.Text("Click here! 1234"),
-            events=[events.click.edict()],
+            dmc.TextInput("Click here!"),
+            events=[
+                events.click.event_dict(),
+                events.keydown.event_dict(),
+            ],
             logging=True,
             id=idp.el,
         ),
-        dcc.Markdown(id=idp.log, mathjax=True),
-    ]
+        # dcc.Markdown(id=idp.log, mathjax=True),
+        dmc.Paper(
+            dmc.Text(
+                dcc.Markdown(
+                    id=idp.log, children="hello, this is a test $x=2^2$", mathjax=True
+                ),
+                color="blue",
+            ),
+            withBorder=True,
+            pl="sm",
+        ),
+    ],
 )
 
 
@@ -40,8 +53,9 @@ layout = html.Div(
 #     return value
 
 
-@cbm.callback(idp.log.output("children"))
-async def click_event(e: events.click = idp.el.input("event")):
+@cbm.callback(idp.log.output("children"), prevent_initial_call=True)
+async def click_event(e: events.click | events.keydown = idp.el.input("event")):
     if e is None:
         raise exceptions.PreventUpdate()
-    return json.dumps(e, indent=2)
+    print(e)
+    return "clicked!"

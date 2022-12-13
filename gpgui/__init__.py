@@ -8,4 +8,5 @@ from dash import exceptions
 
 from .idprovider import IdProvider as idp
 from .utils import inspect
+from .layout import colors
 from ._mydash import MyDash

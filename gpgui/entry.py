@@ -42,8 +42,10 @@ def get_dash_app(layout: Callable[[], html.Div], name="__main__"):
     async def extra_assets(path):
         return await send_from_directory(extra_assets_dir, path)
 
+    hashval = time.time()
+
     @dash_app.server.route("/hartbeat")
     async def hartbeat():
-        return "", 200
+        return str(hashval), 200
 
     return dash_app
