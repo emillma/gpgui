@@ -1,11 +1,12 @@
 from functools import partial, partialmethod
-from typing import Callable, TYPE_CHECKING
+from typing import Callable, TYPE_CHECKING, Type
 from inspect import signature, iscoroutinefunction, _empty
 from dataclasses import dataclass
 
 from gpgui.cbtools import Input, Output, State
 from gpgui import exceptions
 from types import UnionType
+from quart import Quart
 
 if TYPE_CHECKING:
     from gpgui import MyDash
@@ -24,18 +25,21 @@ class PyCallback(Callback):
     ...
 
 
+@dataclass
 class JsCallback:
     ...
 
 
+@dataclass
 class Route:
     ...
 
 
 class CbManager:
+    quart: Quart
+
     pycallbacks: list[PyCallback] = []
     jscallbacks: list[JsCallback] = []
-    routes: list[Route] = []
 
     @classmethod
     def callback(cls, output, **kwargs):
@@ -54,19 +58,20 @@ class CbManager:
                         kwargs[k] = factory(v)
                     else:
                         kwargs[k] = ann(v)
-                return await func(**kwargs)
-                # try:
-                #     output = await func(**kwargs)
-                #     return output
-                # except Exception as e:
-                #     raise exceptions.CallbackException(str(e))
+                try:
+                    return await func(**kwargs)
+                except Exception as e:
+                    raise exceptions.CallbackException().with_traceback(e.__traceback__)
 
             cls.pycallbacks.append(PyCallback(inner, inputs, output, kwargs))
             return func
 
         return decorator
 
-    # def
+    def __getattr__(self, name):
+        if name == "quart":
+            return None
+        return partial(self.callback, name)
 
     @classmethod
     def register(cls, dash_app: "MyDash"):
