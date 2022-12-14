@@ -21,8 +21,10 @@ def get_dash_app(layout: Callable[[], html.Div], name="__main__"):
 
     dash_app = MyDash(
         name,
+        server=quart,
         external_stylesheets=[
             "extra_assets/style.css",
+            "extra_assets/sandstone.css",
         ],
         external_scripts=[
             # "extra_assets/midi.js",
