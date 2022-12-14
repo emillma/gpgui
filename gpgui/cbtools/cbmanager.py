@@ -49,16 +49,16 @@ class CbManager:
             assert iscoroutinefunction(func)
 
             async def inner(**kwargs):
-                for k, v in kwargs.items():
-                    ann = params[k].annotation
-                    if ann is not _empty:
-                        if isinstance(ann, UnionType):
-                            types = ann.__args__
-                            factory = types[0].get_union_factory(types[1:])
-                            kwargs[k] = factory(v)
-                        else:
-                            kwargs[k] = ann(v)
                 try:
+                    for k, v in kwargs.items():
+                        ann = params[k].annotation
+                        if ann is not _empty:
+                            if isinstance(ann, UnionType):
+                                types = ann.__args__
+                                factory = types[0].get_union_factory(types[1:])
+                                kwargs[k] = factory(v)
+                            else:
+                                kwargs[k] = ann(v)
                     return await func(**kwargs)
                 except Exception as e:
                     if isinstance(e, exceptions.PreventUpdate):

@@ -56,7 +56,8 @@ async def testfunc(input=idp.input.input("value")):
 
 
 @cbm.callback()
-async def eventcb(input=idp.event_listener.input("event")):
+async def eventcb(input: str = idp.event_listener.input("event")):
+    # [][1]
     print("hello")
 
 
