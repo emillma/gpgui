@@ -10,10 +10,9 @@ async function fetchWithTimeout(resource, timeout = 1000, fetch_options = {}) {
     return response;
 }
 
-let reload = false;
 let hash = '';
 
-async function watchdog(delay = 3000) {
+async function watchdog() {
     try {
         const response = await fetchWithTimeout('/hartbeat', 1000);
         const text = await response.text();
@@ -23,14 +22,10 @@ async function watchdog(delay = 3000) {
         } else {
             hash = text;
         }
-        if (response.status === 200 && reload) {
-            location.reload();
-        }
-        setTimeout(watchdog, delay);
+        setTimeout(watchdog, 3000);
     } catch (error) {
-        reload = true;
         console.log('could not fetch resource')
-        watchdog(200);
+        watchdog();
     }
 }
-watchdog();
+watchdog(); 

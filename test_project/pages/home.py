@@ -12,37 +12,22 @@ event = {"event": "click", "props": ["type", "timeStamp", "target.children"]}
 
 layout = dmc.Stack(
     [
-        dmc.TextInput(id=idp.text_input, placeholder="Enter a value...", value=""),
-        dmc.Textarea(
-            id=idp.text_area,
-            label="Autosize with no rows limit",
-            placeholder="Autosize with no rows limit",
-            # style={"width": "md"},
-            # size="lg",
-            autosize=True,
-            minRows=6,
-            maxRows=6,
-            value="hello\n" * 10,
-        ),
-        EventListener(
-            dmc.TextInput("Click here!"),
-            events=[
-                events.click.event_dict(),
-                events.keydown.event_dict(),
-            ],
-            logging=True,
-            id=idp.el,
-        ),
-        # dcc.Markdown(id=idp.log, mathjax=True),
+        dmc.TextInput(id=idp.input, placeholder="Enter a value..."),
         dmc.Paper(
-            dmc.Text(
-                dcc.Markdown(
-                    id=idp.log, children="hello, this is a test $x=2^2$", mathjax=True
+            dmc.ScrollArea(
+                dmc.Text(
+                    dcc.Markdown(
+                        id=idp.log,
+                        children="hello, this is a test $x=2^2$\n\n" * 10,
+                        mathjax=True,
+                    ),
+                    color="dimmed",
                 ),
-                color="blue",
+                style={"height": "100%"},
             ),
             withBorder=True,
             pl="sm",
+            style={"height": "10em"},
         ),
     ],
 )
@@ -53,9 +38,13 @@ layout = dmc.Stack(
 #     return value
 
 
+# @cbm.callback(idp.log.output("children"), prevent_initial_call=True)
+# async def click_event(e: events.click | events.keydown = idp.el.input("event")):
+#     # print(e)
+#     return "clicked!"
+
+
 @cbm.callback(idp.log.output("children"), prevent_initial_call=True)
-async def click_event(e: events.click | events.keydown = idp.el.input("event")):
-    if e is None:
-        raise exceptions.PreventUpdate()
-    print(e)
-    return "clicked!"
+async def testfunc(text: str = idp.input.input("value")):
+    raise IndexError("test")
+    return text

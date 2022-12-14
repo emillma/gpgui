@@ -8,6 +8,7 @@ from quart import send_from_directory, websocket
 import gpgui
 from gpgui import MyDash, html, WebSocket, idp
 from gpgui.cbtools import cbm, Input, Output
+from gpgui import exceptions
 
 # from gpgui.layout import navbar, page_container
 
@@ -47,5 +48,10 @@ def get_dash_app(layout: Callable[[], html.Div], name="__main__"):
     @dash_app.server.route("/hartbeat")
     async def hartbeat():
         return str(hashval), 200
+
+    @dash_app.server.errorhandler(Exception)
+    async def handle_exception(e):
+        print(e)
+        return str(e), 500
 
     return dash_app

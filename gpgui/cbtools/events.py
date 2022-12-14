@@ -1,12 +1,17 @@
-class target:
-    """DOM element that triggered the event."""
+from typing import Union
+
+
+class Target:
+    """https://developer.mozilla.org/en-US/docs/Web/API/EventTarget"""
 
     children: str
     id: str
 
 
-class event:
-    target: target
+class Event:
+    """https://developer.mozilla.org/en-US/docs/Web/API/Event"""
+
+    target: Target
     timeStamp: int
     type: str
 
@@ -43,23 +48,106 @@ class event:
         return factory
 
     def __repr__(self):
-        return (
-            f"{self.__class__.__name__}({', '.join(f'{k}={v}' for k, v in self.__dict__.items())})"
-        )
+        fields = ", ".join(f"{k}={v}" for k, v in self.__dict__.items())
+        return f"{self.__class__.__name__}({fields})"
 
 
-class with_modifiers:
+class WithModifiers:
     altKey: bool
     shiftKey: bool
     ctrlKey: bool
 
 
-class click(event, with_modifiers):
+class MouseEvent(Event, WithModifiers):
+    """https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent"""
+
     button: str
     buttons: str
+    clientX: int
+    clientY: int
+    movementX: int
+    movementY: int
+    offsetX: int
+    offsetY: int
+    pageX: int
+    pageY: int
+    screenX: int
+    screenY: int
+    x: int
+    y: int
 
 
-class keydown(event, with_modifiers):
-    target: target
+class click(MouseEvent):
+    """https://developer.mozilla.org/en-US/docs/Web/API/Element/click_event"""
+
+    ...
+
+
+class mousedown(MouseEvent):
+    """https://developer.mozilla.org/en-US/docs/Web/API/Element/mousedown_event"""
+
+    ...
+
+
+class mouseup(MouseEvent):
+    """https://developer.mozilla.org/en-US/docs/Web/API/Element/mouseup_event"""
+
+    ...
+
+
+class mousemove(MouseEvent):
+    """https://developer.mozilla.org/en-US/docs/Web/API/Element/mousemove_event"""
+
+    ...
+
+
+class auxclick(MouseEvent):
+    """https://developer.mozilla.org/en-US/docs/Web/API/Element/auxclick_event"""
+
+    ...
+
+
+class dblclick(MouseEvent):
+    """https://developer.mozilla.org/en-US/docs/Web/API/Element/dblclick_event"""
+
+    ...
+
+
+class KeyBoardEvent(Event, WithModifiers):
+    """https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent"""
+
+    code: str
     key: str
-    # code: str
+    location: int
+    repeat: bool
+
+
+class keydown(KeyBoardEvent):
+    """https://developer.mozilla.org/en-US/docs/Web/API/Element/keydown_event"""
+
+    ...
+
+
+class keyup(KeyBoardEvent):
+    """https://developer.mozilla.org/en-US/docs/Web/API/Element/keyup_event"""
+
+    ...
+
+
+class keypress(KeyBoardEvent):
+    """https://developer.mozilla.org/en-US/docs/Web/API/Element/keypress_event"""
+
+    ...
+
+
+EventType = (
+    mousemove
+    | click
+    | mousedown
+    | mouseup
+    | auxclick
+    | dblclick
+    | keydown
+    | keyup
+    | keypress
+)

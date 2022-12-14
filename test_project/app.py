@@ -54,5 +54,6 @@ dash_app.run(
     # dev_tools_hot_reload_interval=1,
     # dev_tools_hot_reload_max_retry=1,
     dev_tools_hot_reload=False,
+    dev_tools_prune_errors=False,
     port=8050,
 )
