@@ -51,16 +51,18 @@ class CbManager:
             async def inner(**kwargs):
                 for k, v in kwargs.items():
                     ann = params[k].annotation
-                    assert ann is not _empty, f"Missing type annotation for {k}"
-                    if isinstance(ann, UnionType):
-                        types = ann.__args__
-                        factory = types[0].get_union_factory(types[1:])
-                        kwargs[k] = factory(v)
-                    else:
-                        kwargs[k] = ann(v)
+                    if ann is not _empty:
+                        if isinstance(ann, UnionType):
+                            types = ann.__args__
+                            factory = types[0].get_union_factory(types[1:])
+                            kwargs[k] = factory(v)
+                        else:
+                            kwargs[k] = ann(v)
                 try:
                     return await func(**kwargs)
                 except Exception as e:
+                    if isinstance(e, exceptions.PreventUpdate):
+                        raise e
                     raise exceptions.CallbackException().with_traceback(e.__traceback__)
 
             cls.pycallbacks.append(PyCallback(inner, inputs, output, kwargs))
@@ -68,6 +70,7 @@ class CbManager:
 
         return decorator
 
+    @classmethod
     def __getattr__(self, name):
         if name == "quart":
             return None

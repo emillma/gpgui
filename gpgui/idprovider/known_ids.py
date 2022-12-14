@@ -7,6 +7,8 @@ class KnownIds:
 
     hello: _hello
 
+    log: StrWithChildren
+
     input: StrWithChildren
 
-    log: StrWithChildren
+    event_listener: StrWithChildren

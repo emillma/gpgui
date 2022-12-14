@@ -4,6 +4,7 @@ from typing import Union
 class Target:
     """https://developer.mozilla.org/en-US/docs/Web/API/EventTarget"""
 
+    value: str
     children: str
     id: str
 
@@ -136,6 +137,12 @@ class keyup(KeyBoardEvent):
 
 class keypress(KeyBoardEvent):
     """https://developer.mozilla.org/en-US/docs/Web/API/Element/keypress_event"""
+
+    ...
+
+
+class change(Event):
+    """https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/change_event"""
 
     ...
 

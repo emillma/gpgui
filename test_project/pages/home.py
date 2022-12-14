@@ -12,13 +12,12 @@ event = {"event": "click", "props": ["type", "timeStamp", "target.children"]}
 
 layout = dmc.Stack(
     [
-        dmc.Text(
-            dcc.Input(
-                id=idp.input,
-                type="number",
-                debounce=True,
-                placeholder="Debounce True",
-            )
+        EventListener(
+            id=idp.event_listener,
+            events=[events.change.event_dict()],
+            children=dmc.TextInput(
+                id=idp.input, type="search", value=["hello", "world"]
+            ),
         ),
         dmc.Paper(
             dmc.ScrollArea(
@@ -51,8 +50,9 @@ layout = dmc.Stack(
 #     return "clicked!"
 
 
+# @cbm.callback(idp.log.output("children"), prevent_initial_call=False)
+# async def testfunc(input=idp.input.input("value")):
+#     return str(input)
 @cbm.callback(idp.log.output("children"), prevent_initial_call=False)
-async def testfunc(text: str = idp.input.input("value")):
-    print(text)
-    raise Exception("test")
-    return text
+async def testfunc(input=idp.event_listener.input("event")):
+    return str(input)
