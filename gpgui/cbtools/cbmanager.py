@@ -42,7 +42,7 @@ class CbManager:
     jscallbacks: list[JsCallback] = []
 
     @classmethod
-    def callback(cls, output, **kwargs):
+    def callback(cls, output=None, **kwargs):
         def decorator(func):
             params = signature(func).parameters
             inputs = {k: v.default for k, v in params.items()}
@@ -79,4 +79,9 @@ class CbManager:
     @classmethod
     def register(cls, dash_app: "MyDash"):
         for cb in cls.pycallbacks:
-            dash_app.callback(output=cb.outputs, inputs=cb.inputs, **cb.kwargs)(cb.func)
+            if outputs := cb.outputs:
+                dash_app.callback(output=outputs, inputs=cb.inputs, **cb.kwargs)(
+                    cb.func
+                )
+            else:
+                dash_app.callback(inputs=cb.inputs, **cb.kwargs)(cb.func)
