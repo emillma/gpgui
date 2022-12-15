@@ -1,7 +1,41 @@
-from typing import Union
+from typing import Any, Union
+from dataclasses import dataclass
 
 
-class Target:
+class InitFromDict:
+    def __init__(self, event_dict: dict | None):
+        event_dict = event_dict or {}
+        fixed_dict: dict[str, dict | Any] = {}
+        for key, value in event_dict.items():
+            pre, _, post = key.partition(".")
+            if post:
+                fixed_dict.setdefault(pre, {})[post] = value
+            else:
+                fixed_dict[key] = value
+
+        ann = self.annotations()
+        for k in fixed_dict.keys() | ann.keys():
+            if k in ann:
+                value = fixed_dict.get(k, None)
+                dtype = ann[k]
+                if value or issubclass(dtype, InitFromDict):
+                    setattr(self, k, dtype(value))
+                else:
+                    setattr(self, k, value)
+
+            else:
+                raise TypeError(f"Unexpected key {k} in event_dict")
+
+    @classmethod
+    def annotations(cls):
+        return dict(j for i in cls.__mro__[:-1] for j in i.__annotations__.items())
+
+    def __repr__(self):
+        fields = ", ".join(f"{k}={v}" for k, v in self.__dict__.items())
+        return f"{self.__class__.__name__}({fields})"
+
+
+class Target(InitFromDict):
     """https://developer.mozilla.org/en-US/docs/Web/API/EventTarget"""
 
     value: str
@@ -9,11 +43,11 @@ class Target:
     id: str
 
 
-class Event:
+class Event(InitFromDict):
     """https://developer.mozilla.org/en-US/docs/Web/API/Event"""
 
     target: Target
-    timeStamp: int
+    timeStamp: float
     type: str
 
     @classmethod
@@ -30,16 +64,6 @@ class Event:
         return dict(event=cls.__name__, props=props)
 
     @classmethod
-    def annotations(cls):
-        return dict(j for i in cls.__mro__[:-1] for j in i.__annotations__.items())
-
-    def __init__(self, event_dict):
-        ann = self.annotations()
-        for k, v in event_dict.items():
-            if k in ann:
-                setattr(self, k, ann[k](v))
-
-    @classmethod
     def get_union_factory(cls, others: tuple[type]):
         type_dict = {t.__name__: t for t in [cls] + list(others)}
 
@@ -47,10 +71,6 @@ class Event:
             return type_dict[value["type"]](value)
 
         return factory
-
-    def __repr__(self):
-        fields = ", ".join(f"{k}={v}" for k, v in self.__dict__.items())
-        return f"{self.__class__.__name__}({fields})"
 
 
 class WithModifiers:

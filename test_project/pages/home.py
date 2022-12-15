@@ -51,14 +51,13 @@ layout = dmc.Stack(
 
 
 @cbm.callback(idp.log.children.output())
-async def testfunc(input=idp.input.value.input()):
-    return str(input)
+async def testfunc(value: str = idp.input.value.input()):
+    return str(value)
 
 
-@cbm.callback()
-async def eventcb(input: str = idp.event_listener.event.input()):
-    # [][1]
-    print("hello")
+@cbm.callback(idp.log.children.output())
+async def eventcb(change: events.change = idp.event_listener.event.input()):
+    return f"change from {change.target.value}"
 
 
 # @cbm.route("/test", defaults={"input": "hello"}, methods=["GET"])

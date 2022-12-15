@@ -19,7 +19,7 @@ class MyDash(DashProxy, QuartDash):
             transforms=[
                 # TriggerTransform(),
                 LogTransform(),
-                # MultiplexerTransform(),
+                MultiplexerTransform(),
                 NoOutputTransform(),
                 # CycleBreakerTransform(),
                 # BlockingCallbackTransform(),

@@ -74,7 +74,10 @@ class CbManager:
                 except Exception as e:
                     if isinstance(e, exceptions.PreventUpdate):
                         raise e
-                    raise exceptions.CallbackException().with_traceback(e.__traceback__)
+
+                    raise exceptions.CallbackException(str(e)).with_traceback(
+                        e.__traceback__
+                    ) from e
 
             cls.pycallbacks.append(PyCallback(wrapped_func, inputs, output, kwargs))
             return func
