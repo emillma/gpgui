@@ -17,7 +17,10 @@ extra_assets_dir = gpgui_dir / "extra_assets"
 
 def get_dash_app(layout: Callable[[], html.Div], name="__main__"):
     quart = Quart(name)
-    cbm.quart = quart
+
+    @quart.errorhandler(exceptions.CallbackException)
+    async def callback_exception_handler(e):
+        sys.exit(e)
 
     dash_app = MyDash(
         name,
@@ -41,16 +44,12 @@ def get_dash_app(layout: Callable[[], html.Div], name="__main__"):
 
     hashval = time.time()
 
-    @cbm.quart.route("/hartbeat")
+    @cbm.route("/hartbeat")
     async def hartbeat():
-        return str(hashval), 200
+        return str(hashval)
 
-    @cbm.quart.route("/extra_assets/<path:path>")
+    @cbm.route("/extra_assets/<path:path>")
     async def extra_assets(path):
         return await send_from_directory(extra_assets_dir, path)
-
-    @cbm.quart.errorhandler(exceptions.CallbackException)
-    async def callback_exception_handler(e):
-        sys.exit(e)
 
     return dash_app

@@ -7,6 +7,6 @@ from dash_extensions import EventListener, WebSocket
 from dash import exceptions
 
 from .idprovider import IdProvider as idp
+from ._mydash import MyDash
 from .utils import inspect
 from .layout import colors
-from ._mydash import MyDash

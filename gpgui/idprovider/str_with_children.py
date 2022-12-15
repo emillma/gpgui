@@ -23,11 +23,14 @@ class StrWithChildren(str):
     def __call__(self):
         return self
 
-    def input(self, prop):
-        return Input(self, prop)
+    def input(self):
+        id, _, prop = self.rpartition(".")
+        return Input(id, prop)
 
-    def output(self, prop):
-        return Output(self, prop)
+    def output(self):
+        id, _, prop = self.rpartition(".")
+        return Output(id, prop)
 
-    def state(self, prop):
-        return State(self, prop)
+    def state(self):
+        id, _, prop = self.rpartition(".")
+        return State(id, prop)

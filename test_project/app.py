@@ -1,7 +1,7 @@
 from gpgui import dcc, html, idp, dmc
 from gpgui.cbtools import Output, Input, DashLogger
 
-from gpgui.layout import navbar, page_container, configure_plotly
+from gpgui.layout import page_container, configure_plotly
 from gpgui.entry import get_dash_app
 from datetime import date
 from gpgui.layout import colors
@@ -15,20 +15,18 @@ def layout():
             colorScheme="dark",
             colors=colors.DEFAULT_COLORS,
             fontFamily="'Inter', sans-serif",
-            # fontSize="sm",
         ),
         withGlobalStyles=True,
-        # withNormalizeCSS=True,
+        withNormalizeCSS=True,
         children=dmc.Paper(
-            dmc.Group(
+            p="xl",
+            children=dmc.Group(
                 grow=True,
                 direction="column",
                 children=[
                     page_container(),
                 ],
             ),
-            p="xl",
-            # m="xl",
         ),
     )
 

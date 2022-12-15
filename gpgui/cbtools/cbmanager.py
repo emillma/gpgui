@@ -6,7 +6,7 @@ from dataclasses import dataclass
 from gpgui.cbtools import Input, Output, State
 from gpgui import exceptions
 from types import UnionType
-from quart import Quart
+from quart import Quart, websocket
 
 if TYPE_CHECKING:
     from gpgui import MyDash
@@ -32,14 +32,25 @@ class JsCallback:
 
 @dataclass
 class Route:
-    ...
+    func: Callable
+    rule: str
+    defaults: dict | None
+    kwargs: dict
+
+
+@dataclass
+class WebSocket:
+    func: Callable
+    rule: str
+    defaults: dict | None
+    kwargs: dict
 
 
 class CbManager:
-    quart: Quart
-
     pycallbacks: list[PyCallback] = []
-    jscallbacks: list[JsCallback] = []
+    routes: list[Route] = []
+    websockets: list[WebSocket] = []
+    # jscallbacks: list[JsCallback] = []
 
     @classmethod
     def callback(cls, output=None, **kwargs):
@@ -48,7 +59,7 @@ class CbManager:
             inputs = {k: v.default for k, v in params.items()}
             assert iscoroutinefunction(func)
 
-            async def inner(**kwargs):
+            async def wrapped_func(**kwargs):
                 try:
                     for k, v in kwargs.items():
                         ann = params[k].annotation
@@ -65,19 +76,44 @@ class CbManager:
                         raise e
                     raise exceptions.CallbackException().with_traceback(e.__traceback__)
 
-            cls.pycallbacks.append(PyCallback(inner, inputs, output, kwargs))
+            cls.pycallbacks.append(PyCallback(wrapped_func, inputs, output, kwargs))
             return func
 
         return decorator
 
     @classmethod
-    def __getattr__(self, name):
-        if name == "quart":
-            return None
-        return partial(self.callback, name)
+    def route(cls, rule: str, defaults: dict | None = None, **kwargs):
+        if not rule.startswith("/"):
+            raise ValueError("urls must start with a leading slash")
+
+        def decorator(func):
+            assert iscoroutinefunction(func)
+            cls.routes.append(Route(func, rule, defaults, kwargs))
+            return func
+
+        return decorator
+
+    @classmethod
+    def websocket(cls, rule: str, defaults: dict | None = None, **kwargs):
+        def decorator(func):
+            assert iscoroutinefunction(func)
+            cls.websockets.append(WebSocket(func, rule, defaults, kwargs))
+            return func
+
+        return decorator
 
     @classmethod
     def register(cls, dash_app: "MyDash"):
+        for route in cls.routes:
+            dash_app.server.route(
+                rule=route.rule, defaults=route.defaults, **route.kwargs
+            )(route.func)
+
+        for ws in cls.websockets:
+            dash_app.server.websocket(rule=ws.rule, defaults=ws.defaults, **ws.kwargs)(
+                ws.func
+            )
+
         for cb in cls.pycallbacks:
             if outputs := cb.outputs:
                 dash_app.callback(output=outputs, inputs=cb.inputs, **cb.kwargs)(

@@ -2,13 +2,22 @@ from .str_with_children import StrWithChildren
 
 
 class KnownIds:
-    event_listener: StrWithChildren
+    class _input(StrWithChildren):
+        value: StrWithChildren
+
+    input: _input
 
     class _hello(StrWithChildren):
         apekatt: StrWithChildren
 
     hello: _hello
 
-    log: StrWithChildren
+    class _log(StrWithChildren):
+        children: StrWithChildren
 
-    input: StrWithChildren
+    log: _log
+
+    class _event_listener(StrWithChildren):
+        event: StrWithChildren
+
+    event_listener: _event_listener
