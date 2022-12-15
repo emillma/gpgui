@@ -47,6 +47,7 @@ class WebSocket:
 
 
 class CbManager:
+    registered: bool = False
     pycallbacks: list[PyCallback] = []
     routes: list[Route] = []
     websockets: list[WebSocket] = []
@@ -54,6 +55,8 @@ class CbManager:
 
     @classmethod
     def callback(cls, output=None, **kwargs):
+        assert cls.registered is False
+
         def decorator(func):
             params = signature(func).parameters
             inputs = {k: v.default for k, v in params.items()}
@@ -86,6 +89,7 @@ class CbManager:
 
     @classmethod
     def route(cls, rule: str, defaults: dict | None = None, **kwargs):
+        assert cls.registered is False
         if not rule.startswith("/"):
             raise ValueError("urls must start with a leading slash")
 
@@ -98,6 +102,8 @@ class CbManager:
 
     @classmethod
     def websocket(cls, rule: str, defaults: dict | None = None, **kwargs):
+        assert cls.registered is False
+
         def decorator(func):
             assert iscoroutinefunction(func)
             cls.websockets.append(WebSocket(func, rule, defaults, kwargs))
@@ -107,6 +113,7 @@ class CbManager:
 
     @classmethod
     def register(cls, dash_app: "MyDash"):
+        assert cls.registered is False
         for route in cls.routes:
             dash_app.server.route(
                 rule=route.rule, defaults=route.defaults, **route.kwargs
@@ -124,3 +131,4 @@ class CbManager:
                 )
             else:
                 dash_app.callback(inputs=cb.inputs, **cb.kwargs)(cb.func)
+        cls.registered = True

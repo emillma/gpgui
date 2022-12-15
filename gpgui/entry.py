@@ -40,8 +40,6 @@ def get_dash_app(layout: Callable[[], html.Div], name="__main__"):
 
     dash_app.layout = layout()
 
-    cbm.register(dash_app)
-
     hashval = time.time()
 
     @cbm.route("/hartbeat")
@@ -52,4 +50,5 @@ def get_dash_app(layout: Callable[[], html.Div], name="__main__"):
     async def extra_assets(path):
         return await send_from_directory(extra_assets_dir, path)
 
+    cbm.register(dash_app)
     return dash_app
