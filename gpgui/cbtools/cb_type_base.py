@@ -1,12 +1,14 @@
 from dataclasses import dataclass, fields
-from typing import Any
+from typing import Any, TypeVar
 import json
+
+T = TypeVar("T", bound="CbTypeBase")
 
 
 @dataclass
 class CbTypeBase:
     @classmethod
-    def loads(cls, _data: str | dict | None = None, **kwargs):
+    def loads(cls: type[T], _data: str, **kwargs) -> T:
         obj = object.__new__(cls)
 
         if isinstance(_data, str):
@@ -21,6 +23,7 @@ class CbTypeBase:
 
         fnames = {f.name: f.type for f in fields(obj)}
         for k in rolled_dict.keys() | fnames.keys():
+            # TODO: make recursive
             if k in fnames:
                 value = rolled_dict.get(k, None)
                 dtype = fnames[k]

@@ -2,11 +2,6 @@ from .str_with_children import StrWithChildren
 
 
 class KnownIds:
-    class _event_listener(StrWithChildren):
-        event: StrWithChildren
-
-    event_listener: _event_listener
-
     class _ws(StrWithChildren):
         message: StrWithChildren
 
@@ -17,6 +12,11 @@ class KnownIds:
 
     log: _log
 
+    class _hello(StrWithChildren):
+        apekatt: StrWithChildren
+
+    hello: _hello
+
     class _input(StrWithChildren):
         value: StrWithChildren
 
@@ -24,7 +24,7 @@ class KnownIds:
 
     url: StrWithChildren
 
-    class _hello(StrWithChildren):
-        apekatt: StrWithChildren
+    class _event_listener(StrWithChildren):
+        event: StrWithChildren
 
-    hello: _hello
+    event_listener: _event_listener

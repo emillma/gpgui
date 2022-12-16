@@ -20,7 +20,7 @@ async def socket_handler(topic):
 
     try:
         while True:
-            message = Message(await websocket.receive())
+            message = Message.loads(await websocket.receive())
 
             if message.type == "subsicribe":
                 Webserver.topics = json.loads(message.data)

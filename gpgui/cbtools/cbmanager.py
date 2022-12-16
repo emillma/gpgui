@@ -63,27 +63,27 @@ class CbManager:
             assert iscoroutinefunction(func)
 
             async def wrapped_func(**kwargs):
-                try:
-                    for k, v in kwargs.items():
-                        ann = params[k].annotation
-                        if ann is not _empty:
-                            if isinstance(ann, UnionType):
-                                types = ann.__args__
-                                factory = types[0].get_union_factory(types[1:])
-                                kwargs[k] = factory(v)
+                # try:
+                for k, v in kwargs.items():
+                    ann = params[k].annotation
+                    if ann is not _empty:
+                        if isinstance(ann, UnionType):
+                            types = ann.__args__
+                            factory = types[0].get_union_factory(types[1:])
+                            kwargs[k] = factory(v)
+                        else:
+                            if issubclass(ann, CbTypeBase):
+                                kwargs[k] = ann.loads(v)
                             else:
-                                if issubclass(ann, CbTypeBase):
-                                    kwargs[k] = ann.loads(v)
-                                else:
-                                    kwargs[k] = ann(v)
-                    return await func(**kwargs)
-                except Exception as e:
-                    if isinstance(e, exceptions.PreventUpdate):
-                        raise e
+                                kwargs[k] = ann(v)
+                return await func(**kwargs)
+                # except Exception as e:
+                #     if isinstance(e, exceptions.PreventUpdate):
+                #         raise e
 
-                    raise exceptions.CallbackException(str(e)).with_traceback(
-                        e.__traceback__
-                    ) from e
+                #     raise exceptions.CallbackException(str(e)).with_traceback(
+                #         e.__traceback__
+                #     ) from e
 
             cls.pycallbacks.append(PyCallback(wrapped_func, inputs, output, kwargs))
             return func

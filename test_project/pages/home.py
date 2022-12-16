@@ -13,7 +13,7 @@ event = {"event": "click", "props": ["type", "timeStamp", "target.children"]}
 
 layout = dmc.Stack(
     [
-        sockets.SocketComponent(id=idp.ws, in_topics="stuff"),
+        sockets.SocketComponent(id=idp.ws, in_topics="testtopic"),
         events.EventListener(
             id=idp.event_listener,
             events=[events.change.event_dict()],
@@ -41,9 +41,9 @@ layout = dmc.Stack(
 )
 
 
-@cbm.callback()
-async def set_text(data: sockets.Publication = idp.ws.message.as_input()):
-    print(data)
+@cbm.callback(idp.log.children.as_output(), prevent_initial_call=True)
+async def set_text(data: sockets.types.Publication = idp.ws.message.as_input()):
+    return data.data.data
 
 
 # @cbm.callback()
