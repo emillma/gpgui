@@ -41,12 +41,9 @@ layout = dmc.Stack(
 )
 
 
-# @cbm.callback(idp.ws.url.as_output())
-# async def set_text(href: str = idp.url.href.as_input()):
-#     parsed = urlparse(href)
-#     parsed = parsed._replace(scheme="ws")._replace(path=f"/{idp.socketmanager}")
-#     url_str = parsed.geturl()
-#     return url_str
+@cbm.callback()
+async def set_text(data: sockets.Publication = idp.ws.message.as_input()):
+    print(data)
 
 
 # @cbm.callback()

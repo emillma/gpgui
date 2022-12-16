@@ -1,8 +1,10 @@
+from dataclasses import dataclass, fields, is_dataclass
 from dash_extensions import EventListener  # pylint: disable=unused-import
-from .annotation_baseclass import CbAnnotationBaseClass
+from .cb_type_base import CbTypeBase
 
 
-class Target(CbAnnotationBaseClass):
+@dataclass
+class Target(CbTypeBase):
     """https://developer.mozilla.org/en-US/docs/Web/API/EventTarget"""
 
     value: str
@@ -10,7 +12,8 @@ class Target(CbAnnotationBaseClass):
     id: str
 
 
-class Event(CbAnnotationBaseClass):
+@dataclass
+class Event(CbTypeBase):
     """https://developer.mozilla.org/en-US/docs/Web/API/Event"""
 
     target: Target
@@ -20,15 +23,15 @@ class Event(CbAnnotationBaseClass):
     @classmethod
     def event_dict(cls):
         props = []
-        todo = list(cls.annotations().items())
-        while todo:
-            k, v = todo.pop()
-            if annotations := getattr(v, "__annotations__", None):
-                props.extend(f"{k}.{ann}" for ann in annotations)
-            else:
-                props.append(k)
+        for f in fields(cls):
+            if is_dataclass(f.type):
+                props.extend(f"{f.name}.{f2.name}" for f2 in fields(f.type))
 
         return dict(event=cls.__name__, props=props)
+
+    @classmethod
+    def get_props(cls):
+        return [f.name for f in fields(cls)]
 
     @classmethod
     def get_union_factory(cls, others: tuple[type]):
@@ -40,12 +43,14 @@ class Event(CbAnnotationBaseClass):
         return factory
 
 
+@dataclass
 class WithModifiers:
     altKey: bool
     shiftKey: bool
     ctrlKey: bool
 
 
+@dataclass
 class MouseEvent(Event, WithModifiers):
     """https://developer.mozilla.org/en-US/docs/Web/API/MouseEvent"""
 
@@ -65,42 +70,49 @@ class MouseEvent(Event, WithModifiers):
     y: int
 
 
+@dataclass
 class click(MouseEvent):
     """https://developer.mozilla.org/en-US/docs/Web/API/Element/click_event"""
 
     ...
 
 
+@dataclass
 class mousedown(MouseEvent):
     """https://developer.mozilla.org/en-US/docs/Web/API/Element/mousedown_event"""
 
     ...
 
 
+@dataclass
 class mouseup(MouseEvent):
     """https://developer.mozilla.org/en-US/docs/Web/API/Element/mouseup_event"""
 
     ...
 
 
+@dataclass
 class mousemove(MouseEvent):
     """https://developer.mozilla.org/en-US/docs/Web/API/Element/mousemove_event"""
 
     ...
 
 
+@dataclass
 class auxclick(MouseEvent):
     """https://developer.mozilla.org/en-US/docs/Web/API/Element/auxclick_event"""
 
     ...
 
 
+@dataclass
 class dblclick(MouseEvent):
     """https://developer.mozilla.org/en-US/docs/Web/API/Element/dblclick_event"""
 
     ...
 
 
+@dataclass
 class KeyBoardEvent(Event, WithModifiers):
     """https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent"""
 
@@ -110,24 +122,28 @@ class KeyBoardEvent(Event, WithModifiers):
     repeat: bool
 
 
+@dataclass
 class keydown(KeyBoardEvent):
     """https://developer.mozilla.org/en-US/docs/Web/API/Element/keydown_event"""
 
     ...
 
 
+@dataclass
 class keyup(KeyBoardEvent):
     """https://developer.mozilla.org/en-US/docs/Web/API/Element/keyup_event"""
 
     ...
 
 
+@dataclass
 class keypress(KeyBoardEvent):
     """https://developer.mozilla.org/en-US/docs/Web/API/Element/keypress_event"""
 
     ...
 
 
+@dataclass
 class change(Event):
     """https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement/change_event"""
 

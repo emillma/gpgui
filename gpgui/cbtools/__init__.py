@@ -5,4 +5,4 @@ from dash.exceptions import PreventUpdate, CallbackException
 from . import events
 from .cbmanager import CbManager as cbm
 
-from .annotation_baseclass import CbAnnotationBaseClass
+from .cb_type_base import CbTypeBase

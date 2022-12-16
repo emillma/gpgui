@@ -1,10 +1,14 @@
-import json
+from dataclasses import dataclass, fields
 from typing import Any
-import inspect
+import json
 
 
-class CbAnnotationBaseClass:
-    def __init__(self, _data: str | dict | None = None, **kwargs):
+@dataclass
+class CbTypeBase:
+    @classmethod
+    def loads(cls, _data: str | dict | None = None, **kwargs):
+        obj = object.__new__(cls)
+
         if isinstance(_data, str):
             data_dict = json.loads(_data)
         elif _data is None:
@@ -12,21 +16,24 @@ class CbAnnotationBaseClass:
         else:
             data_dict = _data
 
-        rolled_dict = self.fix_unrolled_dict(data_dict)
+        rolled_dict = cls.fix_unrolled_dict(data_dict)
         rolled_dict.update(kwargs)
 
-        ann = self.annotations()
-        for k in rolled_dict.keys() | ann.keys():
-            if k in ann:
+        fnames = {f.name: f.type for f in fields(obj)}
+        for k in rolled_dict.keys() | fnames.keys():
+            if k in fnames:
                 value = rolled_dict.get(k, None)
-                dtype = ann[k]
-                if value or issubclass(dtype, CbAnnotationBaseClass):
-                    setattr(self, k, dtype(value))
+                dtype = fnames[k]
+                if isinstance(dtype, type) and issubclass(dtype, CbTypeBase):
+                    setattr(obj, k, dtype.loads(value))
+                elif isinstance(dtype, type) and value:
+                    setattr(obj, k, dtype(value))
                 else:
-                    setattr(self, k, value)
+                    setattr(obj, k, value)
 
             else:
-                raise TypeError(f"{type(self).__name__} does not have attribute {k}")
+                raise TypeError(f"{type(obj).__name__} does not have attribute {k}")
+        return obj
 
     def dumps(self):
         return json.dumps(self.as_dict())
@@ -34,7 +41,7 @@ class CbAnnotationBaseClass:
     def as_dict(self):
         output = {}
         for k, v in self.__dict__.items():
-            if isinstance(v, CbAnnotationBaseClass):
+            if isinstance(v, CbTypeBase):
                 output[k] = v.as_dict()
             else:
                 output[k] = v
@@ -50,10 +57,6 @@ class CbAnnotationBaseClass:
             else:
                 rolled_dict[key] = value
         return rolled_dict
-
-    @classmethod
-    def annotations(cls):
-        return dict(j for i in cls.__mro__[:-1] for j in i.__annotations__.items())
 
     def __repr__(self):
         fields = ", ".join(f"{k}={v}" for k, v in self.__dict__.items())

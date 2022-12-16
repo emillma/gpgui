@@ -1,5 +1,4 @@
-from functools import partial, partialmethod
-from typing import Callable, TYPE_CHECKING, Type
+from typing import Callable, TYPE_CHECKING
 from types import UnionType
 from inspect import signature, iscoroutinefunction, _empty
 from dataclasses import dataclass
@@ -7,7 +6,7 @@ from dataclasses import dataclass
 from dash_extensions.enrich import Input, Output, State
 
 from gpgui import exceptions
-from quart import Quart, websocket
+from gpgui.cbtools.cb_type_base import CbTypeBase
 
 if TYPE_CHECKING:
     from gpgui import MyDash
@@ -73,7 +72,10 @@ class CbManager:
                                 factory = types[0].get_union_factory(types[1:])
                                 kwargs[k] = factory(v)
                             else:
-                                kwargs[k] = ann(v)
+                                if issubclass(ann, CbTypeBase):
+                                    kwargs[k] = ann.loads(v)
+                                else:
+                                    kwargs[k] = ann(v)
                     return await func(**kwargs)
                 except Exception as e:
                     if isinstance(e, exceptions.PreventUpdate):

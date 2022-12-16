@@ -2,13 +2,13 @@ from dash_extensions import WebSocket
 from gpgui.cbtools import cbm, PreventUpdate
 from gpgui.idprovider import StrWithChildren
 
-from .annotations import SocketState, Message, CONNECTING, OPEN, CLOSING, CLOSED
+from .types import SocketState, Message, CONNECTING, OPEN, CLOSING, CLOSED
 import asyncio
 import json
 
 
 class SocketComponent(WebSocket):
-    def __init__(self, id: StrWithChildren, in_topics: str | list[str]):
+    def __init__(self, id: StrWithChildren, in_topics: str | list[str] = []):
         if isinstance(in_topics, str):
             in_topics = [in_topics]
         self.id = id

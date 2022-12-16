@@ -1,12 +1,11 @@
 from typing import Type
 from quart import Websocket, websocket, abort
-from gpgui.cbtools import cbm, CallbackException
+from gpgui.cbtools import cbm
 from gpgui import idp
 import asyncio
 import logging
 import json
-
-from gpgui.sockets.types import Message
+from .types import Message
 
 
 class Webserver:
@@ -21,23 +20,23 @@ async def socket_handler(topic):
 
     try:
         while True:
-            message = Message.loads(await websocket.receive())
+            message = Message(await websocket.receive())
 
-            if message.type == "subscribe":
-                for topic in json.loads(message.data):
+            if message.type == "subsicribe":
+                Webserver.topics = json.loads(message.data)
+                for topic in Webserver.topics:
                     Webserver.topics.setdefault(topic, set()).add(websocket)
 
             elif message.type == "unsubscribe":
-                for topic in json.loads(message.data):
+                Webserver.topics = json.loads(message.data)
+                for topic in Webserver.topics:
                     Webserver.topics.setdefault(topic, set()).remove(websocket)
 
             elif message.type == "publish":
                 topic = message.data["topic"]
-                for topic in topic if isinstance(topic, list) else [topic]:
-                    for ws in Webserver.topics[topic]:
-                        await ws.send(message.data["data"])
-            else:
-                raise CallbackException("unknown message type")
+                data = message.data["data"]
+                for ws in Webserver.topics[topic]:
+                    await ws.send(data)
 
     except asyncio.CancelledError as e:
         msg = f"websocket cancelled {str(e)}"
@@ -45,9 +44,6 @@ async def socket_handler(topic):
             subscribers.remove(websocket)
         logging.info(msg)
         return msg
-
-    except Exception as e:
-        raise CallbackException(str(e)) from e
 
 
 @cbm.route("/testroute")

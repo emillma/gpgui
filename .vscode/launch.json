@@ -18,7 +18,7 @@
             "request": "launch",
             "program": "${workspaceFolder}/test_project/app.py",
             "cwd": "${workspaceFolder}/test_project",
-            "justMyCode": false,
+            "justMyCode": true,
         },
     ]
 }
