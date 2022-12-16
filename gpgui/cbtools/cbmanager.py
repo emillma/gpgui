@@ -1,11 +1,12 @@
 from functools import partial, partialmethod
 from typing import Callable, TYPE_CHECKING, Type
+from types import UnionType
 from inspect import signature, iscoroutinefunction, _empty
 from dataclasses import dataclass
 
-from gpgui.cbtools import Input, Output, State
+from dash_extensions.enrich import Input, Output, State
+
 from gpgui import exceptions
-from types import UnionType
 from quart import Quart, websocket
 
 if TYPE_CHECKING:

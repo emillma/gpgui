@@ -1,7 +1,10 @@
 from pathlib import Path
+from typing import Type
 import jinja2
 from black import format_str, FileMode
 import re
+import inspect
+
 from .known_ids import KnownIds
 from .str_with_children import StrWithChildren
 
@@ -9,7 +12,7 @@ from .str_with_children import StrWithChildren
 class MetaIdProvider(type):
     """Metaclass for IdProvider."""
 
-    def __getattr__(cls, item):
+    def __getattr__(cls: Type["IdProvider"], item):  # type: ignore
         """Return the item."""
 
         if re.match("__.*__", item):

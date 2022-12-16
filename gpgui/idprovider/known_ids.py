@@ -2,10 +2,12 @@ from .str_with_children import StrWithChildren
 
 
 class KnownIds:
-    class _hello(StrWithChildren):
-        apekatt: StrWithChildren
+    url: StrWithChildren
 
-    hello: _hello
+    class _input(StrWithChildren):
+        value: StrWithChildren
+
+    input: _input
 
     class _event_listener(StrWithChildren):
         event: StrWithChildren
@@ -17,7 +19,9 @@ class KnownIds:
 
     log: _log
 
-    class _input(StrWithChildren):
-        value: StrWithChildren
+    class _hello(StrWithChildren):
+        apekatt: StrWithChildren
 
-    input: _input
+    hello: _hello
+
+    ws: StrWithChildren

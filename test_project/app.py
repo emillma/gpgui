@@ -1,5 +1,4 @@
 from gpgui import dcc, html, idp, dmc
-from gpgui.cbtools import Output, Input, DashLogger
 
 from gpgui.layout import page_container, configure_plotly
 from gpgui.entry import get_dash_app
@@ -23,9 +22,7 @@ def layout():
             children=dmc.Group(
                 grow=True,
                 direction="column",
-                children=[
-                    page_container(),
-                ],
+                children=[page_container()],
             ),
         ),
     )

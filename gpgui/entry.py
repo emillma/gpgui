@@ -1,12 +1,12 @@
 from typing import Callable
 from pathlib import Path
 import time
-from quart import send_from_directory
+from quart import send_from_directory, redirect
 
 import gpgui
-from gpgui import MyDash, html
-from gpgui.cbtools import cbm
-from gpgui import exceptions
+from gpgui import MyDash, html, exceptions, dcc, idp
+from gpgui.cbtools import cbm, PreventUpdate
+
 from quart import Quart
 import sys
 
@@ -26,19 +26,19 @@ def get_dash_app(layout: Callable[[], html.Div], name="__main__"):
         name,
         server=quart,
         external_stylesheets=[
-            "extra_assets/style.css",
-            "extra_assets/sandstone.css",
+            "/extra_assets/style.css",
+            "/extra_assets/sandstone.css",
         ],
         external_scripts=[
             # "extra_assets/midi.js",
-            "extra_assets/watchdog.js",
+            "/extra_assets/watchdog.js",
             # "extra_assets/requests.js",
         ],
         use_pages=True,
         pages_folder="pages",
     )
 
-    dash_app.layout = layout()
+    dash_app.layout = html.Div([layout(), dcc.Location(id=idp.url, refresh=True)])
 
     hashval = time.time()
 
@@ -51,4 +51,5 @@ def get_dash_app(layout: Callable[[], html.Div], name="__main__"):
         return await send_from_directory(extra_assets_dir, path)
 
     cbm.register(dash_app)
+
     return dash_app

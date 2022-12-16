@@ -4,16 +4,7 @@ import asyncio
 import websockets.client
 
 
-async def hello():
-    async with websockets.client.connect("ws://localhost:8765") as websocket:
-        await websocket.send("Hello world!")
-        await websocket.recv()
-
-
-asyncio.run(hello())
-
-
-class Client:
+class SocketClient:
     def __init__(self, url: str):
         self.url = url
         self.session = aiohttp.ClientSession()
