@@ -4,16 +4,16 @@ from quart import Websocket, websocket, abort
 from gpgui.cbtools import cbm, CallbackException
 from gpgui import idp
 from gpgui.sockets.types import (
-    Message,
-    PublicationMessage,
-    SubscriptionMessage,
-    UnsubscriptionMessage,
+    SocketData,
+    PublicationData,
+    SubscriptionData,
+    UnsubscriptionData,
 )
 import asyncio
 import logging
 import json
 
-from gpgui.sockets.types import Message
+from gpgui.sockets.types import SocketData
 
 
 class SocketServer:
@@ -29,31 +29,34 @@ async def socket_handler(topic):
     this_socket: Websocket = websocket._get_current_object()
     try:
         while True:
+            # try:
             mdata = await this_socket.receive()
-            mtype = mdata[: Message.TYPEIDLEN]
+            # except BaseException as e:
+            #     print(e)
+            mtype = mdata[: SocketData.TYPEIDLEN]
 
-            if mtype == SubscriptionMessage.TYPEID:
-                message = SubscriptionMessage.loads(mdata)
+            if mtype == SubscriptionData.TYPEID:
+                message = SubscriptionData.loads(mdata)
                 for topic in message.topics_list():  # pylint: disable=no-member
                     SocketServer.topics.setdefault(topic, set()).add(this_socket)
 
-            elif mtype == UnsubscriptionMessage.TYPEID:
-                message = UnsubscriptionMessage.loads(mdata)
+            elif mtype == UnsubscriptionData.TYPEID:
+                message = UnsubscriptionData.loads(mdata)
                 for topic in message.topics_list():  # pylint: disable=no-member
                     SocketServer.topics.setdefault(topic, set()).remove(this_socket)
 
-            elif mtype == PublicationMessage.TYPEID:
-                message = PublicationMessage.loads(mdata)
+            elif mtype == PublicationData.TYPEID:
+                message = PublicationData.loads(mdata)
                 for topic in message.topics_list():  # pylint: disable=no-member
                     for ws in SocketServer.topics[topic]:
                         await ws.send(mdata)
             else:
                 raise CallbackException("unknown message type")
 
-    except (asyncio.CancelledError, KeyError) as e:
+    except (asyncio.CancelledError, KeyError, BaseException) as e:
         msg = f"websocket cancelled {str(e)}"
         for subscribers in SocketServer.topics.values():
-            subscribers.remove(this_socket)
+            subscribers.discard(this_socket)
         logging.info(msg)
         return msg
 

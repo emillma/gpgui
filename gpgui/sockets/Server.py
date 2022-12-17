@@ -5,7 +5,7 @@ from gpgui import idp
 import asyncio
 import logging
 import json
-from .types import Message
+from .types import SocketData
 
 
 class Webserver:
@@ -20,7 +20,7 @@ async def socket_handler(topic):
 
     try:
         while True:
-            message = Message.loads(await websocket.receive())
+            message = SocketData.loads(await websocket.receive())
 
             if message.type == "subsicribe":
                 Webserver.topics = json.loads(message.data)

@@ -3,7 +3,7 @@ import websockets
 import asyncio
 
 import websockets.client
-from gpgui.sockets.types import Message, PublicationMessage
+from gpgui.sockets.types import SocketData, PublicationData
 from unsync import unsync
 
 
@@ -33,8 +33,8 @@ class SocketClient:
 
     async def publish(self, data: dict | str | list):
         assert isinstance(self.ws, websockets.client.WebSocketClientProtocol)
-        message = PublicationMessage(
-            topics=self.publish_topics, data=data, source=self.name
+        message = PublicationData(
+            topics=self.publish_topics, content=data, source=self.name
         )
         await self.ws.send(message.dumps())
 

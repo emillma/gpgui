@@ -43,7 +43,7 @@ layout = dmc.Stack(
 
 @cbm.callback(idp.log.children.as_output(), prevent_initial_call=True)
 async def set_text(data: sockets.types.Publication = idp.ws.message.as_input()):
-    return data.data.data
+    return data.data.content
 
 
 # @cbm.callback()

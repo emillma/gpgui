@@ -2,7 +2,7 @@ from dash_extensions import WebSocket
 from gpgui.cbtools import cbm, PreventUpdate
 from gpgui.idprovider import StrWithChildren
 
-from .types import SocketState, SubscriptionMessage, CONNECTING, OPEN, CLOSING, CLOSED
+from .types import SocketState, SubscriptionData, CONNECTING, OPEN, CLOSING, CLOSED
 import asyncio
 import json
 
@@ -18,7 +18,7 @@ class SocketComponent(WebSocket):
         @cbm.callback(id.as_output("send"), prevent_initial_call=True)
         async def initialize(state: SocketState = id.as_input("state")):
             if state.readyState == OPEN:
-                return SubscriptionMessage(topics=in_topics).dumps()
+                return SubscriptionData(topics=in_topics).dumps()
 
             elif state.readyState == CLOSING:
                 raise Exception("socket closing")

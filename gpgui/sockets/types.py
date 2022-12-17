@@ -29,7 +29,7 @@ class SocketState(CbTypeBase):
 
 
 @dataclass
-class Message(CbTypeBase):
+class SocketData(CbTypeBase):
     TYPEID: ClassVar[str]
     TYPEIDLEN = 4
 
@@ -46,7 +46,7 @@ class Message(CbTypeBase):
 
 
 @dataclass
-class SubscriptionMessage(Message, WithTopiclist):
+class SubscriptionData(SocketData, WithTopiclist):
     TYPEID = "sub+"
 
     topics: list[str] | str
@@ -54,7 +54,7 @@ class SubscriptionMessage(Message, WithTopiclist):
 
 
 @dataclass
-class UnsubscriptionMessage(Message, WithTopiclist):
+class UnsubscriptionData(SocketData, WithTopiclist):
     TYPEID = "sub-"
 
     topics: list[str] | str
@@ -62,17 +62,17 @@ class UnsubscriptionMessage(Message, WithTopiclist):
 
 
 @dataclass
-class PublicationMessage(Message, WithTopiclist):
+class PublicationData(SocketData, WithTopiclist):
     TYPEID = "pub_"
     topics: list[str] | str
-    data: str | dict | list
+    content: str | dict | list
     source: str
     type: str = "publish"
 
 
 @dataclass
 class Publication(CbTypeBase):
-    data: PublicationMessage
+    data: PublicationData
     origin: str
     isTrusted: bool
     timeStamp: float
