@@ -18,14 +18,14 @@ class StrWithChildren(str):
     def __getattr__(self, item):
         if re.match("__.*__", item):
             raise AttributeError(item)
-        return self._root.register_return(f"{self}.{item}")
+        return self._root.register_return(f"{self}-{item}")
 
     def __call__(self):
         return self
 
     def as_input(self, prop=None):
         if not prop:
-            id_, _, prop = self.rpartition(".")
+            id_, _, prop = self.rpartition("-")
         else:
             id_ = self
 
@@ -33,14 +33,14 @@ class StrWithChildren(str):
 
     def as_output(self, prop=None):
         if not prop:
-            id_, _, prop = self.rpartition(".")
+            id_, _, prop = self.rpartition("-")
         else:
             id_ = self
         return Output(id_, prop)
 
     def as_state(self, prop=None):
         if not prop:
-            id_, _, prop = self.rpartition(".")
+            id_, _, prop = self.rpartition("-")
         else:
             id_ = self
 

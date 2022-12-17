@@ -1,5 +1,6 @@
 from gpgui.sockets import SocketClient
 from asyncio import sleep, run
+import json
 
 
 async def main():
@@ -8,7 +9,9 @@ async def main():
     )
     async with client:
         for i in range(10):
-            await client.publish(f"testmessage {i}")
+            await client.publish(
+                json.dumps({a: {b: c} for a, b, c in zip(range(i), range(i), range(i))})
+            )
             await sleep(0.1)
 
 

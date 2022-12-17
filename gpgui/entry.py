@@ -36,6 +36,7 @@ def get_dash_app(layout: Callable[[], html.Div], name="__main__"):
         ],
         use_pages=True,
         pages_folder="pages",
+        suppress_callback_exceptions=True,
     )
 
     dash_app.layout = html.Div([layout(), dcc.Location(id=idp.url, refresh=True)])

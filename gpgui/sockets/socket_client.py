@@ -36,6 +36,7 @@ class SocketClient:
         message = PublicationData(
             topics=self.publish_topics, content=data, source=self.name
         )
+        print(message.dumps())
         await self.ws.send(message.dumps())
 
     def publish_synchronous(self, data: dict | str | list):

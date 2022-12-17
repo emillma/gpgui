@@ -1,6 +1,6 @@
 from typing import ClassVar, TypeVar
 from gpgui.cbtools import CbTypeBase
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import json
 
 CONNECTING = 0
@@ -30,44 +30,30 @@ class SocketState(CbTypeBase):
 
 @dataclass
 class SocketData(CbTypeBase):
-    TYPEID: ClassVar[str]
-    TYPEIDLEN = 4
-
-    def dumps(self):
-        assert len(self.TYPEID) == 4
-        return self.TYPEID + json.dumps(self.__dict__)
-
-    @classmethod
-    def loads(cls: type[T], _data: str, **kwargs) -> T:
-        if _data is None:
-            return super().loads(None, **kwargs)
-        assert _data[:4] == cls.TYPEID
-        return super().loads(_data[4:], **kwargs)
+    type: str = field(init=False)
 
 
 @dataclass
 class SubscriptionData(SocketData, WithTopiclist):
-    TYPEID = "sub+"
+    type = "subscribe"
 
     topics: list[str] | str
-    type: str = "subscribe"
 
 
 @dataclass
 class UnsubscriptionData(SocketData, WithTopiclist):
-    TYPEID = "sub-"
+    type = "unsubscribe"
 
     topics: list[str] | str
-    type: str = "unsubscribe"
 
 
 @dataclass
 class PublicationData(SocketData, WithTopiclist):
-    TYPEID = "pub_"
+    type = "publish"
+
     topics: list[str] | str
     content: str | dict | list
     source: str
-    type: str = "publish"
 
 
 @dataclass

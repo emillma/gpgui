@@ -2,7 +2,7 @@
 from typing import TypeVar
 import dash
 from gpgui import dcc, html, dmc, idp, exceptions, colors, sockets
-from gpgui.cbtools import cbm, events, PreventUpdate
+from gpgui.cbtools import cbm, events, PreventUpdate, no_update
 import json
 from urllib.parse import urlparse
 
@@ -13,7 +13,7 @@ event = {"event": "click", "props": ["type", "timeStamp", "target.children"]}
 
 layout = dmc.Stack(
     [
-        sockets.SocketComponent(id=idp.ws, in_topics="testtopic"),
+        sockets.SocketComponent(name=idp.myws, url="/testsocket", topics=["testtopic"]),
         events.EventListener(
             id=idp.event_listener,
             events=[events.change.event_dict()],
@@ -42,7 +42,10 @@ layout = dmc.Stack(
 
 
 @cbm.callback(idp.log.children.as_output(), prevent_initial_call=True)
-async def set_text(data: sockets.types.Publication = idp.ws.message.as_input()):
+async def set_text(data: sockets.types.Publication = idp.myws.ws.message.as_input()):
+    if not data:
+        return no_update
+
     return data.data.content
 
 
@@ -59,11 +62,15 @@ async def set_text(data: sockets.types.Publication = idp.ws.message.as_input()):
 
 @cbm.callback(idp.log.children.as_output())
 async def testfunc(value: str = idp.input.value.as_input()):
+    if not value:
+        return no_update
     return str(value)
 
 
 @cbm.callback(idp.log.children.as_output())
 async def eventcb(change: events.change = idp.event_listener.event.as_input()):
+    if not change:
+        return no_update
     return f"change from {change.target.value}"
 
 

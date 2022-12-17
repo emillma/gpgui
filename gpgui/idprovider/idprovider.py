@@ -36,7 +36,7 @@ class IdProvider(KnownIds, metaclass=MetaIdProvider):
         """Get a tree of the known IDs."""
         tree = {}
         for id_ in cls.ids:
-            parts = id_.split(".")
+            parts = id_.split("-")
             current: dict = tree.setdefault(parts[0], {})  # type: ignore
             for part in parts[1:]:
                 current = current.setdefault("_children", {}).setdefault(part, {})

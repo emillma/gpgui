@@ -63,27 +63,20 @@ class CbManager:
             assert iscoroutinefunction(func)
 
             async def wrapped_func(**kwargs):
-                # try:
-                for k, v in kwargs.items():
-                    ann = params[k].annotation
-                    if ann is not _empty:
-                        if isinstance(ann, UnionType):
-                            types = ann.__args__
-                            factory = types[0].get_union_factory(types[1:])
-                            kwargs[k] = factory(v)
-                        else:
-                            if issubclass(ann, CbTypeBase):
-                                kwargs[k] = ann.loads(v)
+                try:
+                    for key, value in kwargs.items():
+                        ann = params[key].annotation
+                        if ann is not _empty:
+                            if isinstance(ann, UnionType):
+                                continue
                             else:
-                                kwargs[k] = ann(v)
-                return await func(**kwargs)
-                # except Exception as e:
-                #     if isinstance(e, exceptions.PreventUpdate):
-                #         raise e
-
-                #     raise exceptions.CallbackException(str(e)).with_traceback(
-                #         e.__traceback__
-                #     ) from e
+                                if issubclass(ann, CbTypeBase):
+                                    kwargs[key] = ann.load(value)
+                                else:
+                                    kwargs[key] = ann(value)
+                    return await func(**kwargs)
+                except exceptions.PreventUpdate as e:
+                    raise e
 
             cls.pycallbacks.append(PyCallback(wrapped_func, inputs, output, kwargs))
             return func
