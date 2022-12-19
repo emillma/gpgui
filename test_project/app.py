@@ -19,9 +19,9 @@ def layout():
         withNormalizeCSS=True,
         children=dmc.Paper(
             p="xl",
-            children=dmc.Group(
-                grow=True,
-                direction="column",
+            children=dmc.Stack(
+                # grow=True,
+                # direction="column",
                 children=[page_container()],
             ),
         ),

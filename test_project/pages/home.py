@@ -9,8 +9,6 @@ from urllib.parse import urlparse
 dash.register_page(__name__, path="/")
 
 
-event = {"event": "click", "props": ["type", "timeStamp", "target.children"]}
-
 layout = dmc.Stack(
     [
         sockets.SocketComponent(name=idp.myws, url="/testsocket", topics=["testtopic"]),
@@ -46,7 +44,7 @@ async def set_text(data: sockets.types.Publication = idp.myws.ws.message.as_inpu
     if not data:
         return no_update
 
-    return data.data.content
+    return data.data.data
 
 
 # @cbm.callback()

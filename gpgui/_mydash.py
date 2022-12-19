@@ -18,7 +18,7 @@ class MyDash(DashProxy, QuartDash):
             *args,
             transforms=[
                 # TriggerTransform(),
-                LogTransform(),
+                # LogTransform(),
                 MultiplexerTransform(),
                 NoOutputTransform(),
                 # CycleBreakerTransform(),

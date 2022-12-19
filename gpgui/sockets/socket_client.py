@@ -1,10 +1,8 @@
 import aiohttp
-import websockets
 import asyncio
 
 import websockets.client
 from gpgui.sockets.types import SocketData, PublicationData
-from unsync import unsync
 
 
 class SocketClient:
@@ -34,10 +32,10 @@ class SocketClient:
     async def publish(self, data: dict | str | list):
         assert isinstance(self.ws, websockets.client.WebSocketClientProtocol)
         message = PublicationData(
-            topics=self.publish_topics, content=data, source=self.name
+            topics=self.publish_topics, data=data, source=self.name
         )
         print(message.dumps())
         await self.ws.send(message.dumps())
 
-    def publish_synchronous(self, data: dict | str | list):
-        return unsync(self.publish)(data)
+    # def publish_synchronous(self, data: dict | str | list):
+    #     return unsync(self.publish)(data)

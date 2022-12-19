@@ -7,23 +7,13 @@ class KnownIds:
 
     hello: _hello
 
-    class _event_listener(StrWithChildren):
-        event: StrWithChildren
-
-    event_listener: _event_listener
-
-    class _log(StrWithChildren):
-        children: StrWithChildren
-
-    log: _log
-
     class _myws(StrWithChildren):
+        url: StrWithChildren
+
         class _ws(StrWithChildren):
             message: StrWithChildren
 
         ws: _ws
-
-        url: StrWithChildren
 
         topics: StrWithChildren
 
@@ -31,7 +21,17 @@ class KnownIds:
 
     url: StrWithChildren
 
+    class _log(StrWithChildren):
+        children: StrWithChildren
+
+    log: _log
+
     class _input(StrWithChildren):
         value: StrWithChildren
 
     input: _input
+
+    class _event_listener(StrWithChildren):
+        event: StrWithChildren
+
+    event_listener: _event_listener

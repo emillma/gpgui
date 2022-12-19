@@ -1,4 +1,4 @@
-from typing import ClassVar, TypeVar
+from typing import ClassVar, Type, TypeVar
 from gpgui.cbtools import CbTypeBase
 from dataclasses import dataclass, field
 import json
@@ -8,14 +8,19 @@ OPEN = 1
 CLOSING = 2
 CLOSED = 3
 
-T = TypeVar("T", bound="Message")
+T = TypeVar("T", bound="SocketData")
 
 
+@dataclass
 class WithTopiclist:
-    topics: str | list[str]
+    topic: str = field(kw_only=True, default="")
+    topics: list[str] = field(kw_only=True, default_factory=list)
 
     def topics_list(self):
-        return self.topics if isinstance(self.topics, list) else [self.topics]
+        if self.topic:
+            return [self.topic]
+        assert isinstance(self.topics, list)
+        return self.topics
 
 
 @dataclass
@@ -32,28 +37,28 @@ class SocketState(CbTypeBase):
 class SocketData(CbTypeBase):
     type: str = field(init=False)
 
+    @classmethod
+    def loads_if_type(cls: Type[T], _data: dict) -> T | None:
+        if _data.get("type") == cls.type:
+            return cls.load(_data)
+        return None
+
 
 @dataclass
 class SubscriptionData(SocketData, WithTopiclist):
     type = "subscribe"
-
-    topics: list[str] | str
 
 
 @dataclass
 class UnsubscriptionData(SocketData, WithTopiclist):
     type = "unsubscribe"
 
-    topics: list[str] | str
-
 
 @dataclass
 class PublicationData(SocketData, WithTopiclist):
     type = "publish"
-
-    topics: list[str] | str
-    content: str | dict | list
-    source: str
+    data: str | dict | list
+    source: str | None
 
 
 @dataclass

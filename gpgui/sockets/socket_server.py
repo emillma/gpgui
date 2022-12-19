@@ -12,9 +12,6 @@ from gpgui.sockets.types import (
 import asyncio
 import logging
 import json
-from json.decoder import JSONDecoder
-
-from gpgui.sockets.types import SocketData
 
 
 class SocketServer:
@@ -24,41 +21,42 @@ class SocketServer:
 @cbm.websocket("/<path:address>")
 async def socket_handler(address):
     headers = websocket.headers
-    this_socket: Websocket = websocket._get_current_object()
+    this_ws: Websocket = websocket._get_current_object()
     try:
         while True:
-            mdata = await this_socket.receive()
+            mdata = await this_ws.receive()
 
             def hook(thing):
                 return dict(thing)
 
-            message = json.loads(mdata, object_pairs_hook=hook)
+            message_dict = json.loads(mdata, object_pairs_hook=hook)
 
-            mtype = message["type"]
-            if mtype == SubscriptionData.type:
-                message = SubscriptionData.loads(mdata)
+            if message := SubscriptionData.loads_if_type(message_dict):
                 for topic in message.topics_list():
-                    SocketServer.topics.setdefault(topic, set()).add(this_socket)
+                    SocketServer.topics.setdefault(topic, set()).add(this_ws)
 
-            elif mtype == UnsubscriptionData.type:
-                message = UnsubscriptionData.loads(mdata)
+            elif message := UnsubscriptionData.loads_if_type(message_dict):
                 for topic in message.topics_list():
-                    SocketServer.topics.setdefault(topic, set()).remove(this_socket)
+                    SocketServer.topics.setdefault(topic, set()).remove(this_ws)
 
-            elif mtype == PublicationData.type:
-                message = PublicationData.loads(mdata)
+            elif message := PublicationData.loads_if_type(message_dict):
                 for topic in message.topics_list():
                     for ws in SocketServer.topics.get(topic, []):
                         await ws.send(mdata)
             else:
-                raise CallbackException("unknown message type")
+                raise ValueError("Invalid message")
 
     except asyncio.CancelledError as e:
         msg = f"websocket cancelled {str(e)}"
-        for subscribers in SocketServer.topics.values():
-            subscribers.discard(this_socket)
         logging.info(msg)
         raise
+
+    except ValueError as value_error:
+        await websocket.close(1003, reason=str(value_error))
+
+    finally:
+        for subscribers in SocketServer.topics.values():
+            subscribers.discard(this_ws)
 
 
 @cbm.route("/testroute")
