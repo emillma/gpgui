@@ -1,2 +1,4 @@
 __pycache__
 *.egg-info
+
+gpgui/idprovider/known_ids.py

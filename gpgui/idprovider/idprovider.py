@@ -5,8 +5,12 @@ from black import format_str, FileMode
 import re
 import inspect
 
-from .known_ids import KnownIds
 from .str_with_children import StrWithChildren
+
+try:
+    from .known_ids import KnownIds
+except ImportError:
+    KnownIds = object  # type: ignore
 
 
 class MetaIdProvider(type):
