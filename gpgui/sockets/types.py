@@ -12,6 +12,17 @@ T = TypeVar("T", bound="SocketData")
 
 
 @dataclass
+class SocketData(CbTypeBase):
+    type: str = field(init=False)
+
+    @classmethod
+    def loads_if_type(cls: Type[T], _data: dict) -> T | None:
+        if _data.get("type") == cls.type:
+            return cls.load(_data)
+        return None
+
+
+@dataclass
 class WithTopiclist:
     topic: str = field(kw_only=True, default="")
     topics: list[str] = field(kw_only=True, default_factory=list)
@@ -31,17 +42,6 @@ class SocketState(CbTypeBase):
     wasClean: bool
     code: int
     reason: str
-
-
-@dataclass
-class SocketData(CbTypeBase):
-    type: str = field(init=False)
-
-    @classmethod
-    def loads_if_type(cls: Type[T], _data: dict) -> T | None:
-        if _data.get("type") == cls.type:
-            return cls.load(_data)
-        return None
 
 
 @dataclass

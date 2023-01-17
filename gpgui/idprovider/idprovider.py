@@ -7,10 +7,7 @@ import inspect
 
 from .str_with_children import StrWithChildren
 
-try:
-    from .known_ids import KnownIds
-except ImportError:
-    KnownIds = object  # type: ignore
+from .known_ids import KnownIds
 
 
 class MetaIdProvider(type):

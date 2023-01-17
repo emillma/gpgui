@@ -54,8 +54,10 @@ class CbManager:
     # jscallbacks: list[JsCallback] = []
 
     @classmethod
-    def callback(cls, output=None, **kwargs):
+    def callback(cls, output=None, prevent_initial_call=False, **kwargs):
         assert cls.registered is False
+
+        kwargs["prevent_initial_call"] = prevent_initial_call
 
         def decorator(func):
             params = signature(func).parameters

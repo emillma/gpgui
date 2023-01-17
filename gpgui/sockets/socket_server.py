@@ -21,12 +21,14 @@ class SocketServer:
 @cbm.websocket("/<path:address>")
 async def socket_handler(address):
     headers = websocket.headers
-    this_ws: Websocket = websocket._get_current_object()
+    this_ws = websocket._get_current_object()  # pylint: disable=protected-access
+    this_ws: Websocket  # type: ignore
     try:
         while True:
             mdata = await this_ws.receive()
 
             def hook(thing):
+                """make json.loads parse only first layer"""
                 return dict(thing)
 
             message_dict = json.loads(mdata, object_pairs_hook=hook)
@@ -49,7 +51,7 @@ async def socket_handler(address):
     except asyncio.CancelledError as e:
         msg = f"websocket cancelled {str(e)}"
         logging.info(msg)
-        raise
+        raise e
 
     except ValueError as value_error:
         await websocket.close(1003, reason=str(value_error))
@@ -57,8 +59,3 @@ async def socket_handler(address):
     finally:
         for subscribers in SocketServer.topics.values():
             subscribers.discard(this_ws)
-
-
-@cbm.route("/testroute")
-async def testroute():
-    return "testroute"

@@ -6,6 +6,7 @@ from dash import exceptions
 
 from .idprovider import IdProvider as idp
 from .cbtools import events
+
 from ._mydash import MyDash
 from .utils import inspect
 from .layout import colors

@@ -26,7 +26,8 @@ class Event(CbTypeBase):
         for f in fields(cls):
             if is_dataclass(f.type):
                 props.extend(f"{f.name}.{f2.name}" for f2 in fields(f.type))
-
+            else:
+                props.append(f.name)
         return dict(event=cls.__name__, props=props)
 
     @classmethod
