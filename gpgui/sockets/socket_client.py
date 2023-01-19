@@ -2,40 +2,52 @@ import aiohttp
 import asyncio
 
 import websockets.client
-from gpgui.sockets.types import SocketData, PublicationData
+from gpgui.config import PORT, HOST
+import json
+import types
 
 
 class SocketClient:
     def __init__(
         self,
-        name: str,
-        url: str,
-        listen_to: list[str] | None = None,
-        publish_to: list[str] | None = None,
+        pub: str | list[str] | None = None,
+        sub: str | list[str] | None = None,
     ):
-        self.name = name
-        print(url)
-        self.url = url
-        self.listen_topics = listen_to or []
-        self.publish_topics = publish_to or []
+        self.pub = [pub] if isinstance(pub, str) else pub or []
+        self.sub = [sub] if isinstance(sub, str) else sub or []
+        pub_str = "&".join(f"pub={p}" for p in self.pub)
+        sub_str = "&".join(f"sub={s}" for s in self.sub)
 
-        self.connection = websockets.client.connect(self.url, extra_headers={})
+        url = f"ws://{HOST}:{PORT}/testsocket?{pub_str}&{sub_str}"
+
+        self.connection = websockets.client.connect(url, extra_headers={})
         self.ws: websockets.client.WebSocketClientProtocol | None = None
 
     async def __aenter__(self):
         self.ws = await self.connection.__aenter__()
+        return self
 
     async def __aexit__(self, exc_type, exc, tb):
         await self.connection.__aexit__(exc_type, exc, tb)
         self.ws = None
 
-    async def publish(self, data: dict | str | list):
-        assert isinstance(self.ws, websockets.client.WebSocketClientProtocol)
-        message = PublicationData(
-            topics=self.publish_topics, data=data, source=self.name
-        )
-        print(message.dumps())
-        await self.ws.send(message.dumps())
+    async def send(self, data: dict | str | list):
+        assert self.ws is not None
+        if not isinstance(data, str):
+            data = json.dumps(data)
+        await self.ws.send(data)
 
-    # def publish_synchronous(self, data: dict | str | list):
-    #     return unsync(self.publish)(data)
+    async def recv(self):
+        assert self.ws is not None
+        data = await self.ws.recv()
+        try:
+            return json.loads(data)
+        except json.JSONDecodeError:
+            return data
+
+    def publish_sync(self, data: dict | str | list):
+        async def inner():
+            async with self.__class__(self.pub, self.sub) as client:
+                await client.send(data)
+
+        asyncio.run(inner())

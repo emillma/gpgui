@@ -45,3 +45,16 @@ class StrWithChildren(str):
             id_ = self
 
         return State(id_, prop)
+
+    def as_type(self, **kwargs):
+        # TODO: figure out why converting to pure string is necessary
+        return dict(type=str(self), **kwargs)
+
+    def as_type_input(self, prop=None, **kwargs):
+        return Input(dict(type=str(self), **kwargs), prop)
+
+    def as_type_state(self, prop=None, **kwargs):
+        return State(dict(type=str(self), **kwargs), prop)
+
+    def as_type_output(self, prop=None, **kwargs):
+        return Output(dict(type=str(self), **kwargs), prop)

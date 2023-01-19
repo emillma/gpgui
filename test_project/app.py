@@ -1,4 +1,4 @@
-from gpgui import dcc, html, idp, dmc, sockets
+from gpgui import dcc, html, idp, dmc, sockets, config
 
 from gpgui.layout import configure_plotly, page_registry, page_container
 from gpgui.entry import get_dash_app
@@ -9,6 +9,9 @@ configure_plotly()
 
 
 def layout():
+    NAVBAR_HEIGHT = "4em"
+    NAVBAR_WIDTH = "8em"
+
     return dmc.MantineProvider(
         theme=dict(
             colorScheme="dark",
@@ -50,15 +53,14 @@ def layout():
                     px="xl",
                 ),
                 width={"base": "9em"},
-                # height="calc(100vh - 4em)",
-                position={"top": "4em", "left": "0", "bottom": "0"},
+                position={"top": NAVBAR_HEIGHT, "left": "0", "bottom": "0"},
                 fixed=True,
             ),
             html.Div(
                 style={
                     "position": "fixed",
-                    "top": "4em",
-                    "left": "9em",
+                    "top": NAVBAR_HEIGHT,
+                    "left": NAVBAR_WIDTH,
                     "bottom": "0",
                     "right": "0",
                 },
@@ -68,14 +70,7 @@ def layout():
                         "height": "100%",
                         "width": "100%",
                     },
-                )
-                #     # children=dmc.ScrollArea(
-                #     #     p="xl",
-                #     #     children=[
-                #     #         page_container,
-                #     #     ],
-                #     # style={"height": "100%m", "width": "100%"},
-                #     # ),
+                ),
             ),
         ],
     )
@@ -90,5 +85,5 @@ dash_app.run(
     use_reloader=False,
     dev_tools_hot_reload=False,
     # dev_tools_prune_errors=False,
-    port=8050,
+    port=config.PORT,
 )

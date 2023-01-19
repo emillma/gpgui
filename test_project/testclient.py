@@ -1,18 +1,25 @@
 from gpgui.sockets import SocketClient
-from asyncio import sleep, run
+from asyncio import sleep, run, gather
+import time
 import json
 
 
+async def send_forever(client: SocketClient):
+    while True:
+        await client.send({"i": time.time()})
+        await sleep(1)
+
+
+async def recv_forever(client: SocketClient):
+    while True:
+        data = await client.recv()
+        print(data)
+
+
 async def main():
-    client = SocketClient(
-        "testclient", "ws://localhost:8050/hallows", publish_to="testtopic"
-    )
-    async with client:
-        for i in range(10):
-            await client.publish(
-                json.dumps({a: {b: c} for a, b, c in zip(range(i), range(i), range(i))})
-            )
-            await sleep(0.1)
+    async with SocketClient(pub="topic1", sub="topic1") as client:
+        await gather(send_forever(client), recv_forever(client))
 
 
-run(main())
+if __name__ == "__main__":
+    run(main())

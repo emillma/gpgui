@@ -6,7 +6,7 @@ from quart import send_from_directory, redirect
 import gpgui
 from gpgui import MyDash, html, exceptions, dcc, idp
 from gpgui.cbtools import cbm, PreventUpdate
-
+from gpgui import sockets
 from quart import Quart
 import sys
 
@@ -26,8 +26,8 @@ def get_dash_app(layout: Callable[[], html.Div], name="__main__"):
         name,
         server=quart,
         external_stylesheets=[
-            "/extra_assets/style.css",
-            "/extra_assets/sandstone.css",
+            # "/extra_assets/style.css",
+            # "/extra_assets/sandstone.css",
         ],
         external_scripts=[
             # "extra_assets/midi.js",
@@ -41,8 +41,11 @@ def get_dash_app(layout: Callable[[], html.Div], name="__main__"):
 
     dash_app.layout = html.Div(
         [
-            dcc.Location(id=idp.url, refresh=True),
             layout(),
+            dcc.Location(id=idp.url, refresh=True),
+            dcc.Location(id=idp.url2),
+            html.Div(id=idp.websockets),
+            html.Div(id=idp.dummy),
         ]
     )
 

@@ -27,7 +27,10 @@ class PyCallback(Callback):
 
 @dataclass
 class JsCallback:
-    ...
+    body: str
+    inputs: dict[str, Input | State]
+    outputs: list[Output]
+    kwargs: dict
 
 
 @dataclass
@@ -51,7 +54,7 @@ class CbManager:
     pycallbacks: list[PyCallback] = []
     routes: list[Route] = []
     websockets: list[WebSocket] = []
-    # jscallbacks: list[JsCallback] = []
+    jscallbacks: list[JsCallback] = []
 
     @classmethod
     def callback(cls, output=None, prevent_initial_call=False, **kwargs):
@@ -79,6 +82,20 @@ class CbManager:
 
             cls.pycallbacks.append(PyCallback(wrapped_func, inputs, output, kwargs))
             return func
+
+        return decorator
+
+    @classmethod
+    def js_callback(cls, output=None, prevent_initial_call=False, **kwargs):
+        assert cls.registered is False
+
+        kwargs["prevent_initial_call"] = prevent_initial_call
+
+        def decorator(func):
+            params = signature(func).parameters
+            inputs = {k: v.default for k, v in params.items()}
+            func_string = f"function({','.join(inputs)}){{{func.__doc__}}}"
+            cls.jscallbacks.append(JsCallback(func_string, inputs, output, kwargs))
 
         return decorator
 
@@ -126,4 +143,9 @@ class CbManager:
                 )
             else:
                 dash_app.callback(inputs=cb.inputs, **cb.kwargs)(cb.func)
+
+        for cb in cls.jscallbacks:
+            dash_app.clientside_callback(
+                cb.body, cb.outputs, *cb.inputs.values(), **cb.kwargs
+            )
         cls.registered = True

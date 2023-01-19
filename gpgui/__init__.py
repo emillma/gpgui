@@ -3,6 +3,7 @@ import dash_mantine_components as dmc
 from dash_extensions.enrich import dcc, html
 
 from dash import exceptions
+import dash
 
 from .idprovider import IdProvider as idp
 from .cbtools import events

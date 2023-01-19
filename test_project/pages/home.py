@@ -2,23 +2,22 @@
 from typing import TypeVar
 import dash
 from gpgui import dcc, html, dmc, idp, exceptions, colors, sockets
-from gpgui.cbtools import cbm, events, PreventUpdate, no_update
-import json
-from urllib.parse import urlparse
-import time
-from dash_extensions import WebSocket
+from gpgui.cbtools import cbm, events, no_update
+from gpgui.sockets import Message
 
 dash.register_page(__name__, path="/")
 
 
 layout = dmc.Stack(
     [
-        sockets.SocketComponent(
-            name=idp.server_socket, url="/testsocket", topics=["testtopic"]
-        ),
+        # sockets.SocketComponent(
+        #     name=idp.server_socket, url="/testsocket", topics=["testtopic"]
+        # ),
+        sockets.SocketComponent(id=idp.mysocket, pub="topic1"),
+        sockets.SocketComponent(id=idp.mysocket2, sub="topic1"),
         events.EventListener(
             id=idp.event_listener,
-            events=[events.change.event_dict(), events.keydown.event_dict()],
+            events=[events.keydown.event_dict()],
             children=dmc.TextInput(id=idp.input, type="text"),
         ),
         dmc.Paper(
@@ -39,6 +38,18 @@ layout = dmc.Stack(
         ),
     ],
 )
+
+
+@cbm.callback(idp.log.as_output("children"), prevent_initial_call=True)
+async def set_text(message: Message = idp.mysocket2.as_input("message")):
+    return message.data
+
+
+@cbm.js_callback(idp.mysocket.as_output("send"), prevent_initial_call=True)
+async def commit_message(
+    event=idp.event_listener.as_input("event"), text=idp.input.as_state("value")
+):
+    """if (event.key === "Enter") return text;"""
 
 
 # @cbm.callback(idp.log.children.as_output())
@@ -75,13 +86,3 @@ layout = dmc.Stack(
 #     if not value:
 #         return no_update
 #     return str(value)
-
-
-# @cbm.callback(idp.log.children.as_output())
-# async def eventcb(
-#     event=idp.event_listener.event.as_input(),
-# ):
-#     if not event:
-#         return no_update
-
-# return f"change from {change.target.value}"
