@@ -40,16 +40,25 @@ layout = dmc.Stack(
 )
 
 
-@cbm.callback(idp.log.as_output("children"), prevent_initial_call=True)
-async def set_text(message: Message = idp.mysocket2.as_input("message")):
-    return message.data
+# @cbm.callback(idp.log.as_output("children"), prevent_initial_call=True)
+# async def set_text(message: Message = idp.mysocket2.as_input("message")):
+#     return message.data
 
 
-@cbm.js_callback(idp.mysocket.as_output("send"), prevent_initial_call=True)
+@cbm.js_callback(
+    # idp.mysocket.as_output("send"),
+    idp.log.as_output("children"),
+    idp.input.as_output("value"),
+    prevent_initial_call=True,
+)
 async def commit_message(
-    event=idp.event_listener.as_input("event"), text=idp.input.as_state("value")
+    event: events.keydown = idp.event_listener.as_input("event"),
+    text=idp.input.as_state("value"),
 ):
-    """if (event.key === "Enter") return text;"""
+    """return [text, ""];"""
+    if event.key == "Enter":
+        return text, ""
+    return no_update
 
 
 # @cbm.callback(idp.log.children.as_output())

@@ -57,7 +57,7 @@ class CbManager:
     jscallbacks: list[JsCallback] = []
 
     @classmethod
-    def callback(cls, output=None, prevent_initial_call=False, **kwargs):
+    def callback(cls, *outputs, prevent_initial_call=False, **kwargs):
         assert cls.registered is False
 
         kwargs["prevent_initial_call"] = prevent_initial_call
@@ -80,13 +80,13 @@ class CbManager:
                                 kwargs[key] = ann(value)
                 return await func(**kwargs)
 
-            cls.pycallbacks.append(PyCallback(wrapped_func, inputs, output, kwargs))
+            cls.pycallbacks.append(PyCallback(wrapped_func, inputs, outputs, kwargs))
             return func
 
         return decorator
 
     @classmethod
-    def js_callback(cls, output=None, prevent_initial_call=False, **kwargs):
+    def js_callback(cls, *outputs, prevent_initial_call=False, **kwargs):
         assert cls.registered is False
 
         kwargs["prevent_initial_call"] = prevent_initial_call
@@ -95,7 +95,7 @@ class CbManager:
             params = signature(func).parameters
             inputs = {k: v.default for k, v in params.items()}
             func_string = f"function({','.join(inputs)}){{{func.__doc__}}}"
-            cls.jscallbacks.append(JsCallback(func_string, inputs, output, kwargs))
+            cls.jscallbacks.append(JsCallback(func_string, inputs, outputs, kwargs))
 
         return decorator
 
