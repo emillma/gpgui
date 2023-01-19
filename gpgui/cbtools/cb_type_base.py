@@ -7,8 +7,9 @@ T = TypeVar("T", bound="CbTypeBase")
 
 
 class CbTypeBase:
-    _valid: bool = True
-    _raw: dict = None
+    _valid: bool = True  # if there is any data
+    _complete: bool = True  # if all fields are present
+    _raw: dict | None = None  # raw data used when loading from json
 
     @classmethod
     def loads(cls: type[T], _data: str, **kwargs) -> T:
@@ -32,10 +33,12 @@ class CbTypeBase:
 
         fields_dict = {f.name: f.type for f in fields(obj)}
         for key in rolled_dict.keys() | fields_dict.keys():
+            if key not in rolled_dict:
+                obj._complete = False
             value = rolled_dict.get(key, None)
-            dtype = fields_dict[key]
 
             if key in fields_dict:
+                dtype = fields_dict[key]
                 if key in rolled_dict:
                     if isinstance(dtype, UnionType):
                         setattr(obj, key, value)
@@ -61,12 +64,12 @@ class CbTypeBase:
 
     def dump(self):
         output = {}
-        for field in fields(self):
-            value = getattr(self, field.name)
+        for f in fields(self):
+            value = getattr(self, f.name)
             if isinstance(value, CbTypeBase):
-                output[field.name] = value.dump()
+                output[f.name] = value.dump()
             else:
-                output[field.name] = value
+                output[f.name] = value
         return output
 
     @classmethod
@@ -81,8 +84,8 @@ class CbTypeBase:
         return rolled_dict
 
     def __repr__(self):
-        fields = ", ".join(f"{k}={v}" for k, v in self.__dict__.items())
-        return f"{self.__class__.__name__}({fields})"
+        fields_ = ", ".join(f"{k}={v}" for k, v in self.__dict__.items())
+        return f"{self.__class__.__name__}({fields_})"
 
     def __bool__(self):
         return bool(self._valid)

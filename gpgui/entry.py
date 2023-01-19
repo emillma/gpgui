@@ -39,7 +39,12 @@ def get_dash_app(layout: Callable[[], html.Div], name="__main__"):
         suppress_callback_exceptions=True,
     )
 
-    dash_app.layout = html.Div([layout(), dcc.Location(id=idp.url, refresh=True)])
+    dash_app.layout = html.Div(
+        [
+            dcc.Location(id=idp.url, refresh=True),
+            layout(),
+        ]
+    )
 
     hashval = time.time()
 

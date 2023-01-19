@@ -12,6 +12,7 @@ import plotly.express as px
 # from gpgui.cbtools import callback
 
 dash.register_page(__name__, path="/liveplot")
+
 df = px.data.gapminder()
 fig = px.scatter(
     df.query("year==2007"),
@@ -27,7 +28,7 @@ fig = px.scatter(
 layout = html.Div(
     [
         dcc.Markdown("hello world"),
-        WebSocket(id="ws"),
+        # WebSocket(id="ws"),
         dcc.Graph(id="graph", figure=fig),
     ]
 )

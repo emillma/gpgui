@@ -8,6 +8,7 @@ from urllib.parse import urlparse, ParseResult
 from .types import SocketState, SubscriptionData, CONNECTING, OPEN, CLOSING, CLOSED
 import asyncio
 import json
+import time
 
 
 class SocketComponent(html.Div):
@@ -18,17 +19,19 @@ class SocketComponent(html.Div):
 
         self.static_children = [
             dcc.Store(id=name.topics, data=topics),
-            dcc.Store(id=name.url, data=url),
+            dcc.Store(id=name.target_url, data=url),
+            html.Div(id=name.ws_container),
         ]
 
         super().__init__(id=name, children=self.static_children)
 
-        @cbm.callback(name.as_output("children"))
+        @cbm.callback(self.name.ws_container.as_output("children"))
         async def register(
-            url: str = name.url.as_input("data"),
+            target_url: str = name.target_url.as_input("data"),
             url_page: str = idp.url.as_state("href"),
         ):
-            url_p = urlparse(url)
+            """Called when the url of the socket changes (only once)"""
+            url_p = urlparse(target_url)
             url_page_p = urlparse(url_page)
 
             socket_url = ParseResult(
@@ -40,7 +43,7 @@ class SocketComponent(html.Div):
                 fragment=url_p.fragment or url_page_p.fragment,
             ).geturl()
 
-            return self.static_children + [WebSocket(id=name.ws, url=socket_url)]
+            return WebSocket(id=name.ws + str(time.time()), url=socket_url)
 
         @cbm.callback(name.ws.as_output("send"))
         async def initialize(
@@ -60,3 +63,8 @@ class SocketComponent(html.Div):
                 return no_update
             else:
                 raise Exception("socket not ready")
+
+        @cbm.callback(None, prevent_initial_call=True)
+        async def error(error=name.ws.as_input("error")):
+            if error:
+                raise Exception(str(error))

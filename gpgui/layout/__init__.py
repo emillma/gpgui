@@ -1,7 +1,2 @@
 from .plotly_config import configure_plotly
-
-import dash
-
-
-def page_container():
-    return dash.page_container
+from dash import page_registry, page_container

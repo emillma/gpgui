@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Type
 from quart import Websocket, websocket, abort
-from gpgui.cbtools import cbm, CallbackException
+from gpgui.cbtools import cbm, PreventUpdate
 from gpgui import idp
 from gpgui.sockets.types import (
     SocketData,
@@ -23,6 +23,7 @@ async def socket_handler(address):
     headers = websocket.headers
     this_ws = websocket._get_current_object()  # pylint: disable=protected-access
     this_ws: Websocket  # type: ignore
+
     try:
         while True:
             mdata = await this_ws.receive()
