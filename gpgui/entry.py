@@ -17,6 +17,7 @@ extra_assets_dir = gpgui_dir / "extra_assets"
 
 def get_dash_app(layout: Callable[[], html.Div], name="__main__"):
     quart = Quart(name)
+    quart.secret_key = "secret"
 
     @quart.errorhandler(exceptions.CallbackException)
     async def callback_exception_handler(e):

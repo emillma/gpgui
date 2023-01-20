@@ -23,10 +23,7 @@ def layout():
         withNormalizeCSS=True,
         children=[
             dmc.Header(
-                pl="xl",
-                height="4em",
-                fixed=True,
-                children=dmc.Group(
+                dmc.Group(
                     [
                         dmc.Center(dmc.Burger(size="md")),
                         dmc.Center(dmc.Text("GPGUI", size="xl", inline=True)),
@@ -34,6 +31,9 @@ def layout():
                     align="left",
                     style={"height": "100%"},
                 ),
+                pl="xl",
+                height="4em",
+                fixed=True,
             ),
             dmc.Navbar(
                 dmc.ScrollArea(
@@ -41,22 +41,22 @@ def layout():
                         [
                             dmc.Anchor(page["name"], href=page["relative_path"])
                             for page in page_registry.values()
-                        ]
-                        * 20,
-                        style={
-                            "width": "100%",
-                            "textAlign": "left",
-                        },
+                        ],
+                        style={"textAlign": "left"},
                     ),
                     dir="rtl",
                     style={"height": "100%", "width": "100%"},
-                    px="xl",
+                    p="xl",
                 ),
-                width={"base": "9em"},
+                width={"base": NAVBAR_WIDTH},
                 position={"top": NAVBAR_HEIGHT, "left": "0", "bottom": "0"},
                 fixed=True,
             ),
             html.Div(
+                dmc.ScrollArea(
+                    dmc.Paper(page_container, p="xl", withBorder=False),
+                    style={"height": "100%", "width": "100%"},
+                ),
                 style={
                     "position": "fixed",
                     "top": NAVBAR_HEIGHT,
@@ -64,13 +64,6 @@ def layout():
                     "bottom": "0",
                     "right": "0",
                 },
-                children=dmc.ScrollArea(
-                    dmc.Paper(page_container, p="xl", withBorder=False),
-                    style={
-                        "height": "100%",
-                        "width": "100%",
-                    },
-                ),
             ),
         ],
     )

@@ -18,14 +18,7 @@ layout = dmc.Stack(
         ),
         dmc.Paper(
             dmc.ScrollArea(
-                dmc.Text(
-                    dcc.Markdown(
-                        id=idp.log,
-                        children="",
-                        mathjax=True,
-                    ),
-                    color="dimmed",
-                ),
+                dmc.Text(dcc.Markdown(id=idp.log, mathjax=True), color="dimmed"),
                 style={"height": "20em"},
             ),
             withBorder=True,
@@ -41,7 +34,7 @@ async def set_text(message: Message = idp.mysocket.as_input("message")):
     return message.data
 
 
-@cbm.js_callback(
+@cbm.callback(
     idp.mysocket.as_output("send"),
     idp.input.as_output("value"),
     prevent_initial_call=True,
@@ -54,5 +47,5 @@ async def commit_message(
     return no_update;
     """
     if event.key == "Enter":
-        return [event.target.value, ""]
+        return [event.target.value or chr(0), ""]
     return no_update
