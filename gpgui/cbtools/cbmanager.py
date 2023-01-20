@@ -10,6 +10,7 @@ from gpgui.cbtools.cb_type_base import CbTypeBase
 
 if TYPE_CHECKING:
     from gpgui import MyDash
+import re
 
 
 @dataclass
@@ -95,6 +96,10 @@ class CbManager:
             params = signature(func).parameters
             inputs = {k: v.default for k, v in params.items()}
             func_string = f"function({','.join(inputs)}){{{func.__doc__}}}"
+            func_string = func_string.replace(
+                "no_update", "window.dash_clientside.no_update"
+            )
+
             cls.jscallbacks.append(JsCallback(func_string, inputs, outputs, kwargs))
 
         return decorator
@@ -137,15 +142,13 @@ class CbManager:
             )
 
         for cb in cls.pycallbacks:
-            if outputs := cb.outputs:
-                dash_app.callback(output=outputs, inputs=cb.inputs, **cb.kwargs)(
-                    cb.func
-                )
+            if cb.outputs:
+                dash_app.callback(*cb.outputs, inputs=cb.inputs, **cb.kwargs)(cb.func)
             else:
                 dash_app.callback(inputs=cb.inputs, **cb.kwargs)(cb.func)
 
         for cb in cls.jscallbacks:
             dash_app.clientside_callback(
-                cb.body, cb.outputs, *cb.inputs.values(), **cb.kwargs
+                cb.body, *cb.outputs, *cb.inputs.values(), **cb.kwargs
             )
         cls.registered = True
