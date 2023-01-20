@@ -142,6 +142,7 @@ class CbManager:
             )
 
         for cb in cls.pycallbacks:
+            cb.outputs = [i for i in cb.outputs if i is not None]
             if cb.outputs:
                 dash_app.callback(*cb.outputs, inputs=cb.inputs, **cb.kwargs)(cb.func)
             else:
