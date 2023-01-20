@@ -8,6 +8,7 @@ from dash_extensions.enrich import (
     Output,
 )
 import plotly.express as px
+from gpgui import dmc
 
 # from gpgui.cbtools import callback
 
@@ -25,8 +26,9 @@ fig = px.scatter(
     size_max=60,
 )
 
-layout = html.Div(
+layout = dmc.Paper(
     [
         dcc.Graph(id="graph", figure=fig, config={"scrollZoom": True}),
-    ]
+    ],
+    p="xl",
 )

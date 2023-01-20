@@ -25,6 +25,7 @@ layout = dmc.Stack(
             pl="sm",
         ),
     ],
+    p="xl",
 )
 
 

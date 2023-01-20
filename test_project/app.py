@@ -52,11 +52,8 @@ def layout():
                 position={"top": NAVBAR_HEIGHT, "left": "0", "bottom": "0"},
                 fixed=True,
             ),
-            html.Div(
-                dmc.ScrollArea(
-                    dmc.Paper(page_container, p="xl", withBorder=False),
-                    style={"height": "100%", "width": "100%"},
-                ),
+            dmc.ScrollArea(
+                page_container,
                 style={
                     "position": "fixed",
                     "top": NAVBAR_HEIGHT,

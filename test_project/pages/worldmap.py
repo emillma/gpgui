@@ -90,9 +90,4 @@ fig.update_layout(
 )
 
 
-layout = html.Div(dcc.Graph(figure=fig, className="h-100"), className="fullscreen")
-# className="h-100"
-# className="vh-100",
-# style={"flex-direction": "column"},
-
-# className="vh-100",
+layout = dcc.Graph(figure=fig, style={"width": "100%"})
