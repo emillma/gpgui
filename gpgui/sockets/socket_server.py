@@ -23,7 +23,6 @@ async def socket_handler(address):
     try:
         while True:
             mdata = await this_ws.receive()
-            print("hello")
             for pub in query.get("pub", []):
                 for subscriber in SocketServer.topics.get(pub, []):
                     await subscriber.send(mdata)

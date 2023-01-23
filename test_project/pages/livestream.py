@@ -42,27 +42,28 @@ lock = asyncio.Lock()
 async def socket_publish(dummy=idp.dummy.as_input("id")):
     if lock.locked():
         return
-
     async with lock, SocketClient(pub="video") as socket:
         for i in range(100000):
-            img = np.random.randint(0, 255, (1000, 1000, 3), dtype=np.uint8)
+            img = np.zeros((512, 512, 3), dtype=np.uint8)
+            t = time.time()
+            start = int(round(np.sin(t) * 256 + 256))
+            img[start:, :, :] = 255
             img_str = img_to_str(img, format="jpeg")
 
             await socket.send(img_str)
-            print("sent")
-            await asyncio.sleep(1)
+            await asyncio.sleep(0.05)
 
 
-@cbm.js_callback(idp.graph.as_output("figure"), idp.text.as_output("children"))
+@cbm.js_callback(idp.graph.as_output("figure"))
 async def update_graph(
     message: Message = idp.mysocket.as_input("message"),
     figure=idp.graph.as_state("figure"),
 ):
     """
     if (message){
-        figure["data"][0]["source"] = message.data;
-        console.log(figure)
-        return [figure, message.data.slice(1000, 1100)];
+        return{
+            'data': [{'source':message.data, 'type':'image'}],
+            'layout': figure.layout};
     } else {
         return no_update;
     }
@@ -70,4 +71,4 @@ async def update_graph(
     if not message:
         return no_update
     figure["data"][0]["source"] = message.data
-    return figure, message.data[1000:1100]
+    return figure
