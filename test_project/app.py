@@ -10,7 +10,7 @@ configure_plotly()
 
 def layout():
     NAVBAR_HEIGHT = "4em"
-    NAVBAR_WIDTH = "8em"
+    NAVBAR_WIDTH = "10em"
 
     return dmc.MantineProvider(
         theme=dict(

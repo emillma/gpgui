@@ -1,6 +1,7 @@
 import dash_bootstrap_components as dbc
 import dash_mantine_components as dmc
 from dash_extensions.enrich import dcc, html
+import dash_player
 
 from dash import exceptions
 import dash
