@@ -22,21 +22,9 @@ dash.register_page(__name__)
 layout = dmc.Paper(
     [
         dash_player.DashPlayer(
-            id=idp.player2,
-            url="/assets/lions.mp4",
-            # url="https://www.youtube.com/watch?v=zqLEO5tIuYs",
-            controls=True,
-            playing=True,
-            loop=False,
-        ),
-        dash_player.DashPlayer(
             id=idp.player,
             url="/live_video",
-            # url="/assets/lions.mp4",
-            # url="https://www.youtube.com/watch?v=zqLEO5tIuYs",
             controls=True,
-            playing=True,
-            loop=False,
         ),
         dmc.Text(id=idp.text_current_time, p="xl"),
         dmc.Text(id=idp.text_time_loaded, p="xl"),
@@ -50,31 +38,39 @@ video_name = str(datadir / "lions.mp4")
 metadata = ffmpeg.probe(video_name)
 
 
+async def chunk_generator(start, end, chunk_size):
+    try:
+        for i in range(start, end, chunk_size):
+            with open(video_name, "rb") as f:
+                f.seek(i)
+                yield f.read(chunk_size)
+            await asyncio.sleep(0.1)
+    except asyncio.CancelledError:
+        pass
+
+
 @cbm.route("/live_video")
 async def serve_file():
-    range_header = quart.request.headers.get("Range", "")
     file_size = os.stat(video_name).st_size
 
-    chunk_size = 1024**2
-    match = re.match("bytes=(\d+)-(\d*)", range_header) or [None] * 3
+    range_header = quart.request.headers.get("Range", None)
+    chunk_size = 1024 * 1024
+
+    match = re.search(r"(\d+)-(\d*)", range_header) or [None, None, None]
     start = int(match[1] or 0)
     end = int(match[2] or file_size - 1)
 
-    async def generator():
-        with open(video_name, "rb") as f:
-            f.seek(start)
-            while (data := f.read(chunk_size)) and f.tell() < end:
-                a = yield data
-                print(a)
-                print(len(data))
-
-    resp = await quart.make_response(generator())
-    # resp.status_code = 206
-    # resp.mimetype = "video/mp4"
-    resp.content_type = "video/mp4"
-    # resp.timeout = None
-    # resp.direct_passthrough = True
-    # resp.headers["Content-Range"] = f"bytes {start}-{file_size}/{file_size}"
+    chunks = chunk_generator(start, end, chunk_size)
+    resp = quart.Response(
+        chunks,
+        206,
+        mimetype="video/mp4",
+        content_type="video/mp4",
+    )
+    resp.headers.add(
+        "Content-Range",
+        f"bytes {start}-{end}/{file_size}",
+    )
     return resp
 
 
