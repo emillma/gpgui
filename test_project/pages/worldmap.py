@@ -39,7 +39,7 @@ async def display_page():
     args = quart.request.args
     session = quart.session
 
-    if session.get("kartverket_url") is None and not lock.locked():
+    if session.get("kartverket_url", None) is None and not lock.locked():
         await lock.acquire()
         url = "https://www.norgeskart.no/norgeskart3-2.0.72.js"
         async with aiohttp.ClientSession() as req_session:

@@ -25,6 +25,7 @@ layout = dmc.Paper(
             id=idp.player,
             url="/live_video",
             controls=True,
+            playing=True,
         ),
         dmc.Text(id=idp.text_current_time, p="xl"),
         dmc.Text(id=idp.text_time_loaded, p="xl"),
@@ -38,13 +39,13 @@ video_name = str(datadir / "lions.mp4")
 metadata = ffmpeg.probe(video_name)
 
 
-async def chunk_generator(start, end, chunk_size):
+async def chunk_generator(start, chunk_size):
     try:
-        for i in range(start, end, chunk_size):
-            with open(video_name, "rb") as f:
-                f.seek(i)
-                yield f.read(chunk_size)
-            await asyncio.sleep(0.1)
+        with open(video_name, "rb") as f:
+            f.seek(start)
+            while data := f.read(chunk_size):
+                yield data
+                await asyncio.sleep(0)
     except asyncio.CancelledError:
         pass
 
@@ -52,41 +53,32 @@ async def chunk_generator(start, end, chunk_size):
 @cbm.route("/live_video")
 async def serve_file():
     file_size = os.stat(video_name).st_size
-
     range_header = quart.request.headers.get("Range", None)
     chunk_size = 1024 * 1024
 
     match = re.search(r"(\d+)-(\d*)", range_header) or [None, None, None]
-    start = int(match[1] or 0)
-    end = int(match[2] or file_size - 1)
+    start, end = int(match[1] or 0), int(match[2] or file_size - 1)
 
-    chunks = chunk_generator(start, end, chunk_size)
-    resp = quart.Response(
-        chunks,
+    return await quart.make_response(
+        chunk_generator(start, chunk_size),
         206,
-        mimetype="video/mp4",
-        content_type="video/mp4",
+        {
+            "content_type": "video/mp4",
+            "Content-Range": f"bytes {start}-{end}/{file_size}",
+        },
     )
-    resp.headers.add(
-        "Content-Range",
-        f"bytes {start}-{end}/{file_size}",
-    )
-    return resp
 
 
 @cbm.js_callback(idp.text_current_time.as_output("children"))
 async def update_current_time(time=idp.player.as_input("currentTime")):
     """return `Current time: ${time}`"""
-    return f"Current time: {time}"
 
 
 @cbm.js_callback(idp.text_time_loaded.as_output("children"))
 async def update_time_loaded(time=idp.player.as_input("secondsLoaded")):
     """return `Time loaded: ${time}`"""
-    return f"Time loaded: {time}"
 
 
 @cbm.js_callback(idp.text_time_total.as_output("children"))
 async def update_time_total(time=idp.player.as_input("duration")):
     """return `Time total: ${time}`"""
-    return f"Time total: {time}"

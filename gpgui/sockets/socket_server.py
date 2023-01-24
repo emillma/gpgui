@@ -34,6 +34,7 @@ async def socket_handler(address):
 
     except ValueError as value_error:
         await websocket.close(1003, reason=str(value_error))
+        raise value_error
 
     finally:
         for subscribers in SocketServer.topics.values():
