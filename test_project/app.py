@@ -1,3 +1,4 @@
+import asyncio
 from gpgui import dcc, html, idp, dmc, sockets, config
 
 from gpgui.layout import configure_plotly, page_registry, page_container
@@ -67,13 +68,4 @@ def layout():
 
 
 dash_app = get_dash_app(layout, name=__name__)
-app = dash_app.server
-
-idp.generate_code()
-dash_app.run(
-    debug=True,
-    use_reloader=False,
-    dev_tools_hot_reload=False,
-    # dev_tools_prune_errors=False,
-    port=config.PORT,
-)
+dash_app.myrun()

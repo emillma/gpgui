@@ -1,4 +1,6 @@
+import asyncio
 from async_dash import Dash as QuartDash
+from gpgui import config
 from dash_extensions.enrich import (
     Dash as DashEnrich,
     DashProxy,
@@ -31,4 +33,15 @@ class MyDash(DashProxy, QuartDash):
                 OperatorTransform(),
             ],
             **kwargs
+        )
+        self.loop = asyncio.new_event_loop()
+
+    def myrun(self):
+        super().run(
+            debug=True,
+            use_reloader=False,
+            dev_tools_hot_reload=False,
+            # dev_tools_prune_errors=False,
+            port=config.PORT,
+            loop=self.loop,  # used in cbm for background tasks
         )

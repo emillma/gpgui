@@ -1,3 +1,4 @@
+import asyncio
 from typing import Callable, TYPE_CHECKING
 from types import UnionType
 from inspect import signature, iscoroutinefunction, _empty
@@ -10,7 +11,6 @@ from gpgui.cbtools.cb_type_base import CbTypeBase
 
 if TYPE_CHECKING:
     from gpgui import MyDash
-import re
 
 
 @dataclass
@@ -50,12 +50,19 @@ class WebSocket:
     kwargs: dict
 
 
+@dataclass
+class WhileRunning:
+    func: Callable
+    kwargs: dict
+
+
 class CbManager:
     registered: bool = False
     pycallbacks: list[PyCallback] = []
     routes: list[Route] = []
     websockets: list[WebSocket] = []
     jscallbacks: list[JsCallback] = []
+    background_tasks: list[WhileRunning] = []
 
     @classmethod
     def callback(cls, *outputs, prevent_initial_call=False, **kwargs):
@@ -129,6 +136,17 @@ class CbManager:
         return decorator
 
     @classmethod
+    def background_task(cls, **kwargs):
+        assert cls.registered is False
+
+        def decorator(func):
+            assert iscoroutinefunction(func)
+            cls.background_tasks.append(WhileRunning(func, kwargs))
+            return func
+
+        return decorator
+
+    @classmethod
     def register(cls, dash_app: "MyDash"):
         assert cls.registered is False
         for route in cls.routes:
@@ -152,4 +170,8 @@ class CbManager:
             dash_app.clientside_callback(
                 cb.body, *cb.outputs, *cb.inputs.values(), **cb.kwargs
             )
+
+        for wr in cls.background_tasks:
+            dash_app.loop.create_task(wr.func(**wr.kwargs))
+
         cls.registered = True

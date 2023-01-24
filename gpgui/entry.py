@@ -15,13 +15,13 @@ gpgui_dir = Path(gpgui.__path__[0])
 extra_assets_dir = gpgui_dir / "extra_assets"
 
 
-def get_dash_app(layout: Callable[[], html.Div], name="__main__"):
+def get_dash_app(layout: Callable[[], html.Div], name="__main__") -> MyDash:
     quart = Quart(name)
     quart.secret_key = "secret"
 
-    @quart.errorhandler(exceptions.CallbackException)
-    async def callback_exception_handler(e):
-        sys.exit(e)
+    # @quart.errorhandler(exceptions.CallbackException)
+    # async def callback_exception_handler(e):
+    #     sys.exit(e)
 
     dash_app = MyDash(
         name,
@@ -61,5 +61,6 @@ def get_dash_app(layout: Callable[[], html.Div], name="__main__"):
         return await send_from_directory(extra_assets_dir, path)
 
     cbm.register(dash_app)
+    idp.generate_code()
 
     return dash_app
