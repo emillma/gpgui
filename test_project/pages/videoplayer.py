@@ -22,9 +22,21 @@ dash.register_page(__name__)
 layout = dmc.Paper(
     [
         dash_player.DashPlayer(
+            id=idp.player2,
+            url="/assets/lions.mp4",
+            # url="https://www.youtube.com/watch?v=zqLEO5tIuYs",
+            controls=True,
+            playing=True,
+            loop=False,
+        ),
+        dash_player.DashPlayer(
             id=idp.player,
             url="/live_video",
+            # url="/assets/lions.mp4",
+            # url="https://www.youtube.com/watch?v=zqLEO5tIuYs",
             controls=True,
+            playing=True,
+            loop=False,
         ),
         dmc.Text(id=idp.text_current_time, p="xl"),
         dmc.Text(id=idp.text_time_loaded, p="xl"),
@@ -38,60 +50,47 @@ video_name = str(datadir / "lions.mp4")
 metadata = ffmpeg.probe(video_name)
 
 
-def get_chunk(byte1=None, byte2=None):
-    file_size = os.stat(video_name).st_size
-    start = 0
-
-    if byte1 < file_size:
-        start = byte1
-    if byte2:
-        length = byte2 + 1 - byte1
-    else:
-        length = file_size - start
-
-    with open(video_name, "rb") as f:
-        f.seek(start)
-        chunk = f.read(length)
-    return chunk, start, length, file_size
-
-
 @cbm.route("/live_video")
 async def serve_file():
-    range_header = quart.request.headers.get("Range", None)
-    byte1, byte2 = 0, None
-    if range_header:
-        match = re.search(r"(\d+)-(\d*)", range_header)
-        groups = match.groups()
+    range_header = quart.request.headers.get("Range", "")
+    file_size = os.stat(video_name).st_size
 
-        if groups[0]:
-            byte1 = int(groups[0])
-        if groups[1]:
-            byte2 = int(groups[1])
+    chunk_size = 1024**2
+    match = re.match("bytes=(\d+)-(\d*)", range_header) or [None] * 3
+    start = int(match[1] or 0)
+    end = int(match[2] or file_size - 1)
 
-    chunk, start, length, file_size = get_chunk(byte1, byte2)
-    resp = quart.Response(
-        chunk,
-        206,
-        mimetype="video/mp4",
-        content_type="video/mp4",
-    )
-    resp.headers.add(
-        "Content-Range",
-        "bytes {0}-{1}/{2}".format(start, start + length - 1, file_size),
-    )
+    async def generator():
+        with open(video_name, "rb") as f:
+            f.seek(start)
+            while (data := f.read(chunk_size)) and f.tell() < end:
+                a = yield data
+                print(a)
+                print(len(data))
+
+    resp = await quart.make_response(generator())
+    # resp.status_code = 206
+    # resp.mimetype = "video/mp4"
+    resp.content_type = "video/mp4"
+    # resp.timeout = None
+    # resp.direct_passthrough = True
+    # resp.headers["Content-Range"] = f"bytes {start}-{file_size}/{file_size}"
     return resp
 
 
-@cbm.callback(idp.text_current_time.as_output("children"))
+@cbm.js_callback(idp.text_current_time.as_output("children"))
 async def update_current_time(time=idp.player.as_input("currentTime")):
+    """return `Current time: ${time}`"""
     return f"Current time: {time}"
 
 
-@cbm.callback(idp.text_time_loaded.as_output("children"))
+@cbm.js_callback(idp.text_time_loaded.as_output("children"))
 async def update_time_loaded(time=idp.player.as_input("secondsLoaded")):
+    """return `Time loaded: ${time}`"""
     return f"Time loaded: {time}"
 
 
-@cbm.callback(idp.text_time_total.as_output("children"))
+@cbm.js_callback(idp.text_time_total.as_output("children"))
 async def update_time_total(time=idp.player.as_input("duration")):
+    """return `Time total: ${time}`"""
     return f"Time total: {time}"
