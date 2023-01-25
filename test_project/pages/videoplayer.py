@@ -6,9 +6,9 @@ import re
 import requests
 from pathlib import Path
 import os
+import time
 
 import quart
-import numpy as np
 import ffmpeg
 
 from gpgui import dcc, dash, dmc, idp, html, dash_player
@@ -23,13 +23,15 @@ layout = dmc.Paper(
     [
         dash_player.DashPlayer(
             id=idp.player,
-            url="/live_video",
+            url="http://127.0.0.1:5000/livestream",
             controls=True,
+            currentTime=20,
             playing=True,
         ),
         dmc.Text(id=idp.text_current_time, p="xl"),
         dmc.Text(id=idp.text_time_loaded, p="xl"),
         dmc.Text(id=idp.text_time_total, p="xl"),
+        dmc.Text(id=idp.testing, p="xl"),
     ],
     p="xl",
 )
@@ -50,20 +52,20 @@ async def chunk_generator(start, chunk_size):
         pass
 
 
-@cbm.route("/live_video")
+@cbm.route("/livestream")
 async def serve_file():
     file_size = os.stat(video_name).st_size
     range_header = quart.request.headers.get("Range", None)
-    chunk_size = 1024 * 1024
+    chunk_size = 32 * 1024
 
-    match = re.search(r"(\d+)-(\d*)", range_header) or [None, None, None]
+    match = re.search(r"(\d+)-(\d*)", range_header or "") or [None, None, None]
     start, end = int(match[1] or 0), int(match[2] or file_size - 1)
 
     return await quart.make_response(
         chunk_generator(start, chunk_size),
         206,
         {
-            "content_type": "video/mp4",
+            "content-type": "video/mp4",
             "Content-Range": f"bytes {start}-{end}/{file_size}",
         },
     )
@@ -82,3 +84,13 @@ async def update_time_loaded(time=idp.player.as_input("secondsLoaded")):
 @cbm.js_callback(idp.text_time_total.as_output("children"))
 async def update_time_total(time=idp.player.as_input("duration")):
     """return `Time total: ${time}`"""
+
+
+# @cbm.callback(idp.player.as_output("url"), prevent_initial_call=True)
+# async def reset_video(
+#     secondsLoaded=idp.player.as_input("secondsLoaded"),
+#     url=idp.player.as_state("url"),
+# ):
+#     if float(secondsLoaded or 0) > 35:
+#         return f"/live_video?a={time.time()}"
+#     return no_update
