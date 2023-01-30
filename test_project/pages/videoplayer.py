@@ -7,14 +7,16 @@ import requests
 from pathlib import Path
 import os
 import time
+from typing import Generator
 
 import quart
 import ffmpeg
+import numpy as np
 
 from gpgui import dcc, dash, dmc, idp, html, dash_player
 from gpgui.cbtools import cbm, no_update
 from gpgui.sockets import Message, SocketComponent, SocketClient
-
+from gpgui.streaming import TestVideoSource, Streamer
 
 dash.register_page(__name__)
 
@@ -23,9 +25,8 @@ layout = dmc.Paper(
     [
         dash_player.DashPlayer(
             id=idp.player,
-            url="http://127.0.0.1:5000/livestream",
-            controls=True,
-            currentTime=20,
+            url="/livestream",
+            # controls=True,
             playing=True,
         ),
         dmc.Text(id=idp.text_current_time, p="xl"),
@@ -36,39 +37,42 @@ layout = dmc.Paper(
     p="xl",
 )
 
-datadir = Path.cwd() / "data"
-video_name = str(datadir / "lions.mp4")
-metadata = ffmpeg.probe(video_name)
 
-
-async def chunk_generator(start, chunk_size):
-    try:
-        with open(video_name, "rb") as f:
-            f.seek(start)
-            while data := f.read(chunk_size):
-                yield data
-                await asyncio.sleep(0)
-    except asyncio.CancelledError:
-        pass
+streamer = Streamer(
+    TestVideoSource(),
+    chunk_size=1024,
+    buffer_size=2**30,
+)
 
 
 @cbm.route("/livestream")
 async def serve_file():
-    file_size = os.stat(video_name).st_size
+    if not streamer.running:
+        await streamer.start()
+    file_size = 30 * 1024
     range_header = quart.request.headers.get("Range", None)
-    chunk_size = 32 * 1024
 
     match = re.search(r"(\d+)-(\d*)", range_header or "") or [None, None, None]
     start, end = int(match[1] or 0), int(match[2] or file_size - 1)
 
-    return await quart.make_response(
-        chunk_generator(start, chunk_size),
+    frames = [frame async for frame in streamer.get_generator(start, end)]
+    data = b"".join(frames)
+    with open("test", "wb") as f:
+        f.write(data)
+    # data = sum(
+    #     [frame async for frame in streamer.get_generator(0, 1024 * 4)], start=b""
+    # )
+
+    res = await quart.make_response(
+        data[start:end],
         206,
         {
             "content-type": "video/mp4",
             "Content-Range": f"bytes {start}-{end}/{file_size}",
         },
     )
+    res.timeout = None
+    return res
 
 
 @cbm.js_callback(idp.text_current_time.as_output("children"))

@@ -38,20 +38,20 @@ layout = dmc.Paper(
 lock = asyncio.Lock()
 
 
-@cbm.callback(None)
-async def socket_publish(dummy=idp.dummy.as_input("id")):
-    if lock.locked():
-        return
-    async with lock, SocketClient(pub="video") as socket:
-        for i in range(100000):
-            img = np.zeros((512, 512, 3), dtype=np.uint8)
-            t = time.time()
-            start = int(round(np.sin(t) * 256 + 256))
-            img[start:, :, :] = 255
-            img_str = img_to_str(img, format="jpeg")
+# @cbm.callback(None)
+# async def socket_publish(dummy=idp.dummy.as_input("id")):
+#     if lock.locked():
+#         return
+#     async with lock, SocketClient(pub="video") as socket:
+#         for i in range(100000):
+#             img = np.zeros((512, 512, 3), dtype=np.uint8)
+#             t = time.time()
+#             start = int(round(np.sin(t) * 256 + 256))
+#             img[start:, :, :] = 255
+#             img_str = img_to_str(img, format="jpeg")
 
-            await socket.send(img_str)
-            await asyncio.sleep(0.05)
+#             await socket.send(img_str)
+#             await asyncio.sleep(0.05)
 
 
 @cbm.js_callback(idp.graph.as_output("figure"))
