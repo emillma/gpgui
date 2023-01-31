@@ -14,7 +14,7 @@ let hash = '';
 
 async function watchdog() {
     try {
-        const response = await fetchWithTimeout('/hartbeat', 1000);
+        const response = await fetchWithTimeout('/hartbeat', 2000);
         const text = await response.text();
 
         if (hash && hash !== text) {
@@ -22,7 +22,7 @@ async function watchdog() {
         } else {
             hash = text;
         }
-        setTimeout(watchdog, 3000);
+        setTimeout(watchdog, 5000);
     } catch (error) {
         console.log('could not fetch resource')
         watchdog();
