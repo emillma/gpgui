@@ -11,6 +11,7 @@ class StrWithChildren(str):
     _root: "IdProvider"
 
     def __new__(cls, value, root: "IdProvider"):
+        value = value.replace(".", "-")
         obj = str.__new__(cls, value)
         obj._root = root
         return obj
