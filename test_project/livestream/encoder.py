@@ -32,7 +32,7 @@ async def translate():
             str(out_filename),
             codec="libx265",
             preset="fast",
-            # **{"x265-params": "lossless=1"},
+            **{"x265-params": "lossless=1"},
             # crf=0,
             # qp=0,
         )

@@ -1,3 +1,5 @@
+raise NotImplementedError("This is a work in progress")
+
 import asyncio
 import itertools
 
@@ -32,10 +34,14 @@ class Streamer:
         ).output(
             "pipe:",
             vcodec="libx264",
+            # fflags="+nobuffer",
             # vprofile="main444-8",
             # preset="fast",
+            # frag_duration=2_000_000,
+            # frag_size=4096,
+            b=800_000,
             f="mp4",
-            movflags="frag_keyframe+empty_moov",
+            # movflags="frag_keyframe+empty_moov",
             # frag_duration=200_000
             # t=1000,
             # an=None,
@@ -78,23 +84,24 @@ class Streamer:
             self.proc.stdin.write(data)
             # print("got data")
             await self.proc.stdin.drain()
-            self.input_event.set()
 
         self.proc.stdin.close()
 
     async def store_output(self):
         while self.running:
-            await self.input_event.wait()
-            self.input_event.clear()
             data = await self.proc.stdout.read(1000_000_000)
             await self.buffer.append_async(data)
 
     async def get_generator(self, start, stop):
         try:
-            for start in range(start, stop, self.chunk_size):
-                data = await self.buffer.read_async(start, self.chunk_size)
+            total = 0
+            while True:
+                data = await self.buffer.read_from_async(start)
+                total = total + len(data)
+                start = start + len(data)
+                # print("\ntotal", total)
                 yield data
-                await asyncio.sleep(0)
+
         except asyncio.CancelledError:
             pass
 

@@ -1,112 +1,61 @@
 import asyncio
-from PIL import Image
 from io import BytesIO
-import base64
-import re
-import requests
-from pathlib import Path
-import os
+import itertools
 import time
-from typing import Generator
 
-import quart
-import ffmpeg
+import base64
+from PIL import Image
 import numpy as np
+import quart
+import plotly.graph_objects as go
+import cv2
 
-from gpgui import dcc, dash, dmc, idp, html, dash_player
+from gpgui import dcc, dash, dmc, idp, html, dash_player, html
 from gpgui.cbtools import cbm, no_update
-from gpgui.sockets import Message, SocketComponent, SocketClient
-from gpgui.streaming import TestVideoSource, Streamer
+from gpgui.sockets import Message, SocketComponentPath
+from gpgui.streaming import TestVideoSource
 
 dash.register_page(__name__)
+idp = idp.videoplayer2
 
+
+def img_to_str(img: np.ndarray, format="jpeg"):
+    with BytesIO() as f:
+        Image.fromarray(img).save(f, format=format)
+        img_bytes = f.getvalue()
+    prefix = f"data:image/{format};base64,"
+    img_str = prefix + base64.b64encode(img_bytes).decode("utf-8")
+    return img_str
+
+
+init_img = img_to_str(np.zeros((512, 512, 3), dtype=np.uint8))
 
 layout = dmc.Paper(
     [
-        dash_player.DashPlayer(
-            id=idp.player,
-            url="/livestream",
-            controls=True,
-            playing=True,
-        ),
-        dmc.Text(id=idp.text_current_time, p="xl"),
-        dmc.Text(id=idp.text_time_loaded, p="xl"),
-        dmc.Text(id=idp.text_time_total, p="xl"),
-        dmc.Text(id=idp.testing, p="xl"),
+        SocketComponentPath(id=idp.socket, path="/video"),
+        html.Img(id=idp.img),
+        dmc.Text(id=idp.text_output, p="xl"),
     ],
     p="xl",
 )
 
 
-streamer = Streamer(
-    TestVideoSource(),
-    chunk_size=1024,
-    buffer_size=2**30,
-)
+@cbm.websocket("/video")
+async def get_image_video():
+    socket = quart.websocket
+
+    while True:
+        cap = cv2.VideoCapture("assets/lions.mp4")
+        for i in itertools.count():
+            ret, frame = cap.read()
+            if not ret:
+                break
+            img_str = img_to_str(frame[::2, ::2, ::-1])
+            await socket.send(img_str)
 
 
-# async def foo():
-#     await streamer.start()
-#     frames = [frame async for frame in streamer.get_generator(0, 10000)]
-#     await streamer.stop()
-#     with open("assets/test.mp4", "wb") as f:
-#         f.write(b"".join(frames))
-
-
-# asyncio.run(foo())
-# here = True
-
-
-@cbm.route("/livestream")
-async def serve_file():
-    if not streamer.running:
-        await streamer.start()
-    file_size = 2**30
-
-    range_header = quart.request.headers.get("Range", "bytes=0-")
-    match = re.match(r"bytes=(\d+)-(\d*)", range_header)
-    start, end = int(match[1]), int(match[2] or file_size - 1)
-
-    # frames = [frame async for frame in streamer.get_generator(start, end)]
-    # data = b"".join(frames)
-    # with open("test", "wb") as f:
-    #     f.write(data)
-    # data = sum(
-    #     [frame async for frame in streamer.get_generator(0, 1024 * 4)], start=b""
-    # )
-
-    res = await quart.make_response(
-        streamer.get_generator(start, end),
-        200,
-        {
-            "content-type": "video/mp4",
-            # "Content-Range": f"bytes {start}-{end}/{file_size}",
-        },
-    )
-    res.timeout = None
-    return res
-
-
-@cbm.js_callback(idp.text_current_time.as_output("children"))
-async def update_current_time(time=idp.player.as_input("currentTime")):
-    """return `Current time: ${time}`"""
-
-
-@cbm.js_callback(idp.text_time_loaded.as_output("children"))
-async def update_time_loaded(time=idp.player.as_input("secondsLoaded")):
-    """return `Time loaded: ${time}`"""
-
-
-@cbm.js_callback(idp.text_time_total.as_output("children"))
-async def update_time_total(time=idp.player.as_input("duration")):
-    """return `Time total: ${time}`"""
-
-
-# @cbm.callback(idp.player.as_output("url"), prevent_initial_call=True)
-# async def reset_video(
-#     secondsLoaded=idp.player.as_input("secondsLoaded"),
-#     url=idp.player.as_state("url"),
-# ):
-#     if float(secondsLoaded or 0) > 35:
-#         return f"/live_video?a={time.time()}"
-#     return no_update
+@cbm.js_callback(idp.img.as_output("src"))
+async def update_image(message: Message = idp.socket.as_input("message")):
+    """
+    if (message) return message.data; else return no_update;
+    """

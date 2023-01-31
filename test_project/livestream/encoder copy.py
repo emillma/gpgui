@@ -55,7 +55,6 @@ async def translate():
     nframes = int(probed["streams"][0]["nb_frames"])
     total_size = int(probed["format"]["size"])
     compression = total_size / (nframes * width * height * 3)
-    print("compression", compression)
 
 
 asyncio.run(translate())

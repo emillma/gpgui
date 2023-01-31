@@ -35,8 +35,11 @@ class RotatingBytearray:
         if start < 0:
             start = self.stop + start
 
-        if start < self.start or start > self.stop:
-            raise ValueError("Out of bounds")
+        if start < self.start or self.stop < start:
+            raise ValueError("Start of bounds")
+
+        if start + length > self.stop:
+            raise ValueError("End of bounds")
 
         start_index = start % self.size
 
@@ -49,17 +52,27 @@ class RotatingBytearray:
 
         return data
 
+    def read_from(self, start):
+        return self.read(start, self.filled - start)
+
     async def append_async(self, data):
+        self.append(data)
         async with self.new_data_condition:
-            self.append(data)
             self.new_data_condition.notify_all()
 
-    async def read_async(self, start, length):
-        while self.stop < start + length:
+    async def read_async(self, start, lentght):
+        while start + lentght > self.stop:
             async with self.new_data_condition:
                 await self.new_data_condition.wait()
+        return self.read(start, lentght)
 
-        return self.read(start, length)
+    async def read_from_async(self, start):
+        while True:
+            if start < self.stop:
+                return self.read_from(start)
+
+            async with self.new_data_condition:
+                await self.new_data_condition.wait()
 
     def data(self):
         return self.read(self.start, self.filled)

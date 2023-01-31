@@ -10,7 +10,7 @@ dash.register_page(__name__, path="/")
 
 layout = dmc.Stack(
     [
-        sockets.SocketComponent(id=idp.mysocket, pub="topic1", sub="topic1"),
+        sockets.SocketComponentPubSub(id=idp.mysocket, pub="topic1", sub="topic1"),
         events.EventListener(
             id=idp.event_listener,
             events=[events.keydown.event_dict()],

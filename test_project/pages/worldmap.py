@@ -72,8 +72,10 @@ fig = px.scatter_mapbox(
     hover_name="City",
     hover_data=["State", "Population"],
     color_discrete_sequence=["fuchsia"],
-    zoom=5,
+    zoom=8,
+    center={"lat": 63.4, "lon": 10.4},
 )
+
 fig.update_layout(
     mapbox_style="open-street-map",
     margin={"r": 0, "t": 0, "l": 0, "b": 0},
@@ -81,7 +83,7 @@ fig.update_layout(
         {
             "below": "traces",
             "sourcetype": "raster",
-            "sourceattribution": "United States Geological Survey",
+            # "sourceattribution": "United States Geological Survey",
             "source": ["/tilemap_norway?z={z}&x={x}&y={y}"],
             "opacity": 1,
             "maxzoom": 24,

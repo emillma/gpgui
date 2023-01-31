@@ -1,17 +1,22 @@
 import asyncio
-from PIL import Image
 from io import BytesIO
-import base64
+import itertools
 import time
 
+import base64
+from PIL import Image
 import numpy as np
+import quart
 import plotly.graph_objects as go
-import plotly.express as px
-from gpgui import dcc, dash, dmc, idp, html
+import cv2
+
+from gpgui import dcc, dash, dmc, idp, html, dash_player, html
 from gpgui.cbtools import cbm, no_update
-from gpgui.sockets import Message, SocketComponent, SocketClient
+from gpgui.sockets import Message, SocketComponentPath
+from gpgui.streaming import TestVideoSource
 
 dash.register_page(__name__)
+idp = idp.videoplayer_graph
 
 
 def img_to_str(img: np.ndarray, format="jpeg"):
@@ -23,40 +28,35 @@ def img_to_str(img: np.ndarray, format="jpeg"):
     return img_str
 
 
-init_img = img_to_str(np.random.randint(0, 255, (1000, 1000, 3), dtype=np.uint8))
+init_img = img_to_str(np.zeros((512, 512, 3), dtype=np.uint8))
 
 layout = dmc.Paper(
     [
-        SocketComponent(id=idp.mysocket, sub="video"),
+        SocketComponentPath(id=idp.socket, path="/video_graph"),
         dcc.Graph(id=idp.graph, figure=go.Figure(go.Image(source=init_img))),
-        dmc.Text(id=idp.text),
-        html.Div(id=idp.dummy),
+        dmc.Text(id=idp.text_output, p="xl"),
     ],
     p="xl",
 )
 
-lock = asyncio.Lock()
 
+@cbm.websocket("/video_graph")
+async def thisupdate():
+    socket = quart.websocket
 
-# @cbm.callback(None)
-# async def socket_publish(dummy=idp.dummy.as_input("id")):
-#     if lock.locked():
-#         return
-#     async with lock, SocketClient(pub="video") as socket:
-#         for i in range(100000):
-#             img = np.zeros((512, 512, 3), dtype=np.uint8)
-#             t = time.time()
-#             start = int(round(np.sin(t) * 256 + 256))
-#             img[start:, :, :] = 255
-#             img_str = img_to_str(img, format="jpeg")
-
-#             await socket.send(img_str)
-#             await asyncio.sleep(0.05)
+    while True:
+        cap = cv2.VideoCapture("assets/lions.mp4")
+        for i in itertools.count():
+            ret, frame = cap.read()
+            if not ret:
+                break
+            img_str = img_to_str(frame[::2, ::2, ::-1])
+            await socket.send(img_str)
 
 
 @cbm.js_callback(idp.graph.as_output("figure"))
 async def update_graph(
-    message: Message = idp.mysocket.as_input("message"),
+    message: Message = idp.socket.as_input("message"),
     figure=idp.graph.as_state("figure"),
 ):
     """
