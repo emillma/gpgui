@@ -5,12 +5,12 @@ import logging
 from urllib.parse import urlparse, parse_qs
 
 
-class SocketServer:
+class SocketServerPubSub:
     topics: dict[str, set[Websocket]] = {}
 
 
-@cbm.websocket("/<path:address>")
-async def socket_handler(address):
+@cbm.websocket("/pubsub")
+async def socket_handler():
     # pylint: disable=protected-access
     this_ws: Websocket = websocket._get_current_object()  # type: ignore
 
@@ -18,13 +18,13 @@ async def socket_handler(address):
     query = parse_qs(url_p.query, keep_blank_values=True)
 
     for sub in query.get("sub", []):
-        SocketServer.topics.setdefault(sub, set()).add(this_ws)
+        SocketServerPubSub.topics.setdefault(sub, set()).add(this_ws)
 
     try:
         while True:
             mdata = await this_ws.receive()
             for pub in query.get("pub", []):
-                for subscriber in SocketServer.topics.get(pub, []):
+                for subscriber in SocketServerPubSub.topics.get(pub, []):
                     await subscriber.send(mdata)
 
     except asyncio.CancelledError as e:
@@ -37,5 +37,5 @@ async def socket_handler(address):
         raise value_error
 
     finally:
-        for subscribers in SocketServer.topics.values():
+        for subscribers in SocketServerPubSub.topics.values():
             subscribers.discard(this_ws)

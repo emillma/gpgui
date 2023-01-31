@@ -9,7 +9,7 @@ from urllib.parse import urlparse, ParseResult
 from gpgui.config import PORT, HOST
 
 
-class SocketComponent(WebSocket):
+class SocketComponentPubSub(WebSocket):
     """name, name.ws, name.topics, name.url"""
 
     def __init__(
@@ -23,7 +23,19 @@ class SocketComponent(WebSocket):
         pub_str = "&".join(f"pub={p}" for p in pub)
         sub_str = "&".join(f"sub={s}" for s in sub)
 
-        url = f"ws://{HOST}:{PORT}/testsocket?{pub_str}&{sub_str}"
+        url = f"ws://{HOST}:{PORT}/pubsub?{pub_str}&{sub_str}"
+        super().__init__(id=id, url=url)
+
+
+class SocketComponentPath(WebSocket):
+    """name, name.ws, name.topics, name.url"""
+
+    def __init__(
+        self,
+        id: StrWithChildren,  # pylint: disable=redefined-builtin
+        path: str,
+    ):
+        url = f"ws://{HOST}:{PORT}/{path}"
         super().__init__(id=id, url=url)
 
 

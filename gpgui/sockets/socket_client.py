@@ -7,7 +7,7 @@ import json
 import types
 
 
-class SocketClient:
+class SocketClientPubSub:
     def __init__(
         self,
         pub: str | list[str] | None = None,
