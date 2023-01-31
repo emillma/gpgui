@@ -31,11 +31,15 @@ class Streamer:
             framerate=30,
         ).output(
             "pipe:",
-            f="ismv",
-            codec="libx265",
-            preset="fast",
-            frag_duration=200_000
-            # movflags="frag_keyframe+empty_moov",
+            vcodec="libx264",
+            # vprofile="main444-8",
+            # preset="fast",
+            f="mp4",
+            movflags="frag_keyframe+empty_moov",
+            # frag_duration=200_000
+            # t=1000,
+            # an=None,
+            # movflags="+dash",
             # crf=5
             # **{"x265-params": "lossless=1"},
         )
@@ -72,6 +76,7 @@ class Streamer:
         while self.running:
             data = (await anext(it)).tobytes()
             self.proc.stdin.write(data)
+            # print("got data")
             await self.proc.stdin.drain()
             self.input_event.set()
 

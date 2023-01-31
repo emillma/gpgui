@@ -26,7 +26,7 @@ layout = dmc.Paper(
         dash_player.DashPlayer(
             id=idp.player,
             url="/livestream",
-            # controls=True,
+            controls=True,
             playing=True,
         ),
         dmc.Text(id=idp.text_current_time, p="xl"),
@@ -45,30 +45,42 @@ streamer = Streamer(
 )
 
 
+# async def foo():
+#     await streamer.start()
+#     frames = [frame async for frame in streamer.get_generator(0, 10000)]
+#     await streamer.stop()
+#     with open("assets/test.mp4", "wb") as f:
+#         f.write(b"".join(frames))
+
+
+# asyncio.run(foo())
+# here = True
+
+
 @cbm.route("/livestream")
 async def serve_file():
     if not streamer.running:
         await streamer.start()
-    file_size = 30 * 1024
-    range_header = quart.request.headers.get("Range", None)
+    file_size = 2**30
 
-    match = re.search(r"(\d+)-(\d*)", range_header or "") or [None, None, None]
-    start, end = int(match[1] or 0), int(match[2] or file_size - 1)
+    range_header = quart.request.headers.get("Range", "bytes=0-")
+    match = re.match(r"bytes=(\d+)-(\d*)", range_header)
+    start, end = int(match[1]), int(match[2] or file_size - 1)
 
-    frames = [frame async for frame in streamer.get_generator(start, end)]
-    data = b"".join(frames)
-    with open("test", "wb") as f:
-        f.write(data)
+    # frames = [frame async for frame in streamer.get_generator(start, end)]
+    # data = b"".join(frames)
+    # with open("test", "wb") as f:
+    #     f.write(data)
     # data = sum(
     #     [frame async for frame in streamer.get_generator(0, 1024 * 4)], start=b""
     # )
 
     res = await quart.make_response(
-        data[start:end],
-        206,
+        streamer.get_generator(start, end),
+        200,
         {
             "content-type": "video/mp4",
-            "Content-Range": f"bytes {start}-{end}/{file_size}",
+            # "Content-Range": f"bytes {start}-{end}/{file_size}",
         },
     )
     res.timeout = None
