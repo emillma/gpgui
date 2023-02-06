@@ -45,9 +45,16 @@ class SocketClientPubSub:
         except json.JSONDecodeError:
             return data
 
-    def publish_sync(self, data: dict | str | list):
+    def send_sync(self, data: dict | str | list):
         async def inner():
-            async with self.__class__(self.pub, self.sub) as client:
-                await client.send(data)
+            async with self:
+                await self.send(data)
 
         asyncio.run(inner())
+
+    async def recv_sync(self, timeout=1):
+        async def inner():
+            async with self:
+                return await self.recv()
+
+        return asyncio.run(asyncio.wait_for(inner(), timeout=timeout))
