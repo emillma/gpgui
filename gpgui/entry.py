@@ -6,16 +6,25 @@ from quart import send_from_directory, redirect
 import gpgui
 from gpgui import MyDash, html, exceptions, dcc, idp
 from gpgui.cbtools import cbm, PreventUpdate
+from gpgui.layout import configure_plotly
+
 from gpgui import sockets
 from quart import Quart
 import sys
-
+import hypercorn
 
 gpgui_dir = Path(gpgui.__path__[0])
 extra_assets_dir = gpgui_dir / "extra_assets"
 
 
-def get_dash_app(layout: Callable[[], html.Div], name="__main__") -> MyDash:
+def get_dash_app(
+    layout: Callable[[], html.Div], name="__main__", log_level=None
+) -> MyDash:
+    configure_plotly()
+
+    if log_level is not None:
+        hypercorn.Config.loglevel = log_level
+
     quart = Quart(name)
     quart.secret_key = "secret"
 

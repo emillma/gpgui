@@ -1,12 +1,13 @@
 import asyncio
+import logging
 from gpgui import dcc, html, idp, dmc, sockets, config
 
 from gpgui.layout import configure_plotly, page_registry, page_container
 from gpgui.entry import get_dash_app
 from datetime import date
 from gpgui.layout import colors
-
-configure_plotly()
+import sys
+import hypercorn
 
 
 def layout():
@@ -67,5 +68,5 @@ def layout():
     )
 
 
-dash_app = get_dash_app(layout, name=__name__)
+dash_app = get_dash_app(layout, name=__name__, log_level="WARNING")
 dash_app.myrun()

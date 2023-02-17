@@ -14,48 +14,59 @@ from gpgui import dcc, dash, dmc, idp, html, dash_player, html
 from gpgui.cbtools import cbm, no_update
 from gpgui.sockets import Message, SocketComponentPath
 from gpgui.streaming import TestVideoSource
+from dash_extensions import WebSocket
+from websockets.legacy import client
+import time
 
 dash.register_page(__name__)
 idp = idp.videoplayer2
 
 
-def img_to_str(img: np.ndarray, format="jpeg"):
-    with BytesIO() as f:
-        Image.fromarray(img).save(f, format=format)
-        img_bytes = f.getvalue()
-    prefix = f"data:image/{format};base64,"
-    img_str = prefix + base64.b64encode(img_bytes).decode("utf-8")
-    return img_str
-
-
-init_img = img_to_str(np.zeros((512, 512, 3), dtype=np.uint8))
-
 layout = dmc.Paper(
     [
-        SocketComponentPath(id=idp.socket, path="/video"),
-        html.Img(id=idp.img),
+        # SocketComponentPath(id=idp.socket, path="/video"),
+        # WebSocket(id=idp.socket, url="ws://10.53.58.89:8083"),
+        html.Img(id=idp.img, src="/emil"),
         dmc.Text(id=idp.text_output, p="xl"),
     ],
     p="xl",
 )
 
 
-@cbm.websocket("/video")
-async def get_image_video():
-    socket = quart.websocket
+@cbm.route("/emil")
+async def emil():
+    async def gen():
+        async with client.connect("ws://10.53.58.89:8083") as websocket:
+            while True:
+                await websocket.send(str(time.time_ns()))
+                try:
+                    data = await asyncio.wait_for(websocket.recv(), 10)
+                    yield (
+                        b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + data + b"\r\n"
+                    )
+                except asyncio.TimeoutError:
+                    pass
 
-    while True:
-        cap = cv2.VideoCapture("assets/lions.mp4")
-        for i in itertools.count():
-            ret, frame = cap.read()
-            if not ret:
-                break
-            img_str = img_to_str(frame[::2, ::2, ::-1])
-            await socket.send(img_str)
+    resp = await quart.make_response(gen())
+    resp.mimetype = "multipart/x-mixed-replace; boundary=frame"
+    resp.timeout = None
+    return resp
+
+    # resp = await quart.make_response(
+    #     gen(),
+    #     206,
+    #     {"mimetype": "multipart/x-mixed-replace; boundary=frame"},
+    # )
+    # resp.timeout = None
+    # return resp
 
 
-@cbm.js_callback(idp.img.as_output("src"))
-async def update_image(message: Message = idp.socket.as_input("message")):
-    """
-    if (message) return message.data; else return no_update;
-    """
+# @cbm.js_callback(idp.img.as_output("src"))
+# async def update_image(message: Message = idp.socket.as_input("message")):
+#     """
+#     if (message) return message.data; else return no_update;
+#     """
+#     if message:
+#         return message.data
+#     else:
+#         return no_update
