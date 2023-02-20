@@ -25,48 +25,56 @@ idp = idp.videoplayer2
 layout = dmc.Paper(
     [
         # SocketComponentPath(id=idp.socket, path="/video"),
-        # WebSocket(id=idp.socket, url="ws://10.53.58.89:8083"),
-        html.Img(id=idp.img, src="/emil"),
+        WebSocket(id=idp.socket, url="ws://10.53.58.89:8083"),
+        html.Img(id=idp.img),
         dmc.Text(id=idp.text_output, p="xl"),
     ],
     p="xl",
 )
 
 
-@cbm.route("/emil")
-async def emil():
-    async def gen():
-        async with client.connect("ws://10.53.58.89:8083") as websocket:
-            while True:
-                await websocket.send(str(time.time_ns()))
-                try:
-                    data = await asyncio.wait_for(websocket.recv(), 10)
-                    yield (
-                        b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + data + b"\r\n"
-                    )
-                except asyncio.TimeoutError:
-                    pass
+# @cbm.route("/emil")
+# async def emil():
+#     async def gen():
+#         async with client.connect("ws://10.53.58.89:8083") as websocket:
+#             while True:
+#                 try:
+#                     data = await asyncio.wait_for(websocket.recv(), 10)
+#                     print(f"Got data at {time.time()}")
+#                     yield (
+#                         b"--frame\r\nContent-Type: image/jpeg\r\n\r\n" + data + b"\r\n"
+#                     )
+#                 except asyncio.TimeoutError:
+#                     pass
 
-    resp = await quart.make_response(gen())
-    resp.mimetype = "multipart/x-mixed-replace; boundary=frame"
-    resp.timeout = None
-    return resp
+#     resp = await quart.make_response(gen())
+#     resp.mimetype = "multipart/x-mixed-replace; boundary=frame"
+#     resp.timeout = None
+#     return resp
 
-    # resp = await quart.make_response(
-    #     gen(),
-    #     206,
-    #     {"mimetype": "multipart/x-mixed-replace; boundary=frame"},
-    # )
-    # resp.timeout = None
-    # return resp
+# resp = await quart.make_response(
+#     gen(),
+#     206,
+#     {"mimetype": "multipart/x-mixed-replace; boundary=frame"},
+# )
+# resp.timeout = None
+# return resp
 
 
-# @cbm.js_callback(idp.img.as_output("src"))
-# async def update_image(message: Message = idp.socket.as_input("message")):
-#     """
-#     if (message) return message.data; else return no_update;
-#     """
-#     if message:
-#         return message.data
-#     else:
-#         return no_update
+@cbm.js_callback(idp.img.as_output("src"))
+async def update_image(message: Message = idp.socket.as_input("message")):
+    """
+    if (message) {
+        return message.data.arrayBuffer().then(buffer => {
+            let b64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
+            console.log(b64);
+            return "data:image/jpeg;base64," + b64;
+        });
+    } else {
+        return no_update
+    };
+    """
+    if message:
+        return message.data
+    else:
+        return no_update
