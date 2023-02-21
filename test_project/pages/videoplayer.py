@@ -67,7 +67,6 @@ async def update_image(message: Message = idp.socket.as_input("message")):
     if (message) {
         return message.data.arrayBuffer().then(buffer => {
             let b64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
-            console.log(b64);
             return "data:image/jpeg;base64," + b64;
         });
     } else {
