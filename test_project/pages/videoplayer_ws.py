@@ -24,7 +24,6 @@ idp = idp.videoplayer2
 
 layout = dmc.Paper(
     [
-        # SocketComponentPath(id=idp.socket, path="/video"),
         WebSocket(id=idp.socket, url="ws://10.53.58.89:8083"),
         html.Img(id=idp.img),
         dmc.Text(id=idp.text_output, p="xl"),

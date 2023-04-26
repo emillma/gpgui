@@ -36,9 +36,9 @@ class MyDash(DashProxy, QuartDash):
         )
         self.loop = asyncio.new_event_loop()
 
-    def myrun(self):
+    def myrun(self, debug=True):
         super().run(
-            debug=True,
+            debug=debug,
             use_reloader=False,
             dev_tools_hot_reload=False,
             # dev_tools_prune_errors=False,

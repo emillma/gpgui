@@ -6,14 +6,11 @@ from gpgui.layout import configure_plotly, page_registry, page_container
 from gpgui.entry import get_dash_app
 from datetime import date
 from gpgui.layout import colors
-import sys
-import hypercorn
 
 
 def layout():
     NAVBAR_HEIGHT = "4em"
     NAVBAR_WIDTH = "10em"
-
     return dmc.MantineProvider(
         theme=dict(
             colorScheme="dark",
@@ -69,4 +66,4 @@ def layout():
 
 
 dash_app = get_dash_app(layout, name=__name__, log_level="WARNING")
-dash_app.myrun()
+dash_app.myrun(debug=True)
