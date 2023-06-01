@@ -36,5 +36,16 @@ lime = limes[DEFAULT_SHADE]
 yellow = yellows[DEFAULT_SHADE]
 orange = oranges[DEFAULT_SHADE]
 
-
+names = [
+    "indigo",
+    "orange",
+    "lime",
+    "grape",
+    "cyan",
+    "pink",
+    "red",
+    "teal",
+    "green",
+    "yellow",
+]
 defaults = [indigo, orange, lime, grape, cyan, pink, red, teal, green, yellow]

@@ -9,6 +9,8 @@ import dash_bootstrap_components as dbc
 from gpgui.cbtools import cbm
 import quart
 import asyncio
+import plotly.graph_objects as go
+import numpy as np
 
 dash.register_page(__name__)
 
@@ -74,6 +76,32 @@ fig = px.scatter_mapbox(
     color_discrete_sequence=["fuchsia"],
     zoom=8,
     center={"lat": 63.4, "lon": 10.4},
+)
+
+pos = np.array(
+    [
+        [63.419949, 10.401514],
+        [63.419774, 10.401167],
+        [63.419468, 10.401100],
+        [63.419347, 10.400831],
+        [63.418905, 10.401300],
+        [63.418791, 10.402092],
+        [63.418143, 10.402714],
+        [63.418104, 10.402569],
+        [63.416453, 10.404302],
+        [63.416686, 10.405469],
+        [63.417699, 10.404485],
+        [63.417828, 10.404621],
+        [63.418369, 10.404031],
+    ]
+).T
+fig.add_trace(
+    go.Scattermapbox(
+        lat=pos[0],
+        lon=pos[1],
+        mode="lines+markers",
+        name="My line",
+    )
 )
 
 fig.update_layout(

@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Type
+from typing import Type, TYPE_CHECKING
 import jinja2
 from black import format_str, FileMode
 import re
@@ -7,7 +7,10 @@ import inspect
 
 from .str_with_children import StrWithChildren
 
-from .known_ids import KnownIds
+if TYPE_CHECKING:
+    from .known_ids import KnownIds
+else:
+    KnownIds = object
 
 
 class MetaIdProvider(type):

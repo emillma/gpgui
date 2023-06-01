@@ -8,7 +8,7 @@ class Target(CbTypeBase):
     """https://developer.mozilla.org/en-US/docs/Web/API/EventTarget"""
 
     value: str
-    children: str
+    # children: str
     id: str
 
 

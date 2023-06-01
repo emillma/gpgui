@@ -4,7 +4,8 @@ import itertools
 import time
 
 import base64
-from PIL import Image
+
+# from PIL import Image
 import numpy as np
 import quart
 import plotly.graph_objects as go
@@ -68,9 +69,7 @@ async def update_image(message: Message = idp.socket.as_input("message")):
             let b64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
             return "data:image/jpeg;base64," + b64;
         });
-    } else {
-        return no_update
-    };
+    } else {return no_update};
     """
     if message:
         return message.data
