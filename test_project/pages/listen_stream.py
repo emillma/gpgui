@@ -4,7 +4,6 @@ from pathlib import Path
 import os
 
 import quart
-import ffmpeg
 from quart import redirect
 
 from gpgui import dash, dmc, idp, dash_player, html

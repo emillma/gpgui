@@ -63,17 +63,17 @@ async def display_page():
     return quart.redirect(url)
 
 
-us_cities = pd.read_csv(
-    "https://raw.githubusercontent.com/plotly/datasets/master/us-cities-top-1k.csv"
-)
+# us_cities = pd.read_csv(
+#     "https://raw.githubusercontent.com/plotly/datasets/master/us-cities-top-1k.csv"
+# )
 
 fig = px.scatter_mapbox(
-    us_cities,
-    lat="lat",
-    lon="lon",
-    hover_name="City",
-    hover_data=["State", "Population"],
-    color_discrete_sequence=["fuchsia"],
+    # us_cities,
+    # lat="lat",
+    # lon="lon",
+    # hover_name="City",
+    # hover_data=["State", "Population"],
+    # color_discrete_sequence=["fuchsia"],
     zoom=8,
     center={"lat": 63.4, "lon": 10.4},
 )
