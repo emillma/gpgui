@@ -1,42 +1,29 @@
 from gpgui import dmc, idp, html, dash
-from gpgui.cbtools import cbm, EventListener
+from gpgui.cbtools import cbm, EventListener, no_update
 from gpgui import cbtools as cbt
 
 dash.register_page(__name__)
 idp = idp.event_test
-event = {
-    "event": "keydown",
-    "props": [
-        "altKey",
-        "shiftKey",
-        "ctrlKey",
-        "timeStamp",
-        "type",
-        "code",
-        "key",
-        "location",
-        "repeat",
-        "target.value",
-        "target.id",
-    ],
-}
 layout = dmc.Paper(
     EventListener(
-        html.Div(
-            [dmc.Button("Start", id=idp.button, n_clicks=0), dmc.Text(id=idp.text)]
-        ),
+        [dmc.Button("Start", id=idp.button, n_clicks=0), dmc.Text(id=idp.text)],
         id=idp.listener,
-        events=[event],
+        events=[cbt.events.keydown.event_dict()],
     )
 )
 print(cbt.events.keydown.event_dict())
 
 
-@cbm.callback()
+@cbm.callback(idp.text.children.as_output())
 async def print_keydown(
-    nevents=idp.listener.n_events.as_input(), event=idp.listener.event.as_state()
+    n: int | None = idp.listener.n_events.as_input(),
+    event: cbt.events.keydown = idp.listener.event.as_state(),
 ):
-    print(event)
+    target = event.target.id
+    if event._valid:
+        return event.toJSON()
+    else:
+        return no_update
 
 
 @cbm.callback(idp.text.children.as_output())

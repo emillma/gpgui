@@ -41,7 +41,7 @@ class MyDash(DashProxy, QuartDash):
             debug=debug,
             use_reloader=False,
             dev_tools_hot_reload=False,
-            # dev_tools_prune_errors=False,
+            host="0.0.0.0",
             port=config.PORT,
             loop=self.loop,  # used in cbm for background tasks
         )

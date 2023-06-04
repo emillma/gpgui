@@ -1,2 +1,2 @@
-PORT = 8088
+PORT = 8080
 HOST = "localhost"
