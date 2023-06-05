@@ -49,15 +49,7 @@ def get_dash_app(
         suppress_callback_exceptions=True,
     )
 
-    dash_app.layout = html.Div(
-        [
-            layout(),
-            dcc.Location(id=idp.url, refresh=True),
-            dcc.Location(id=idp.url2),
-            html.Div(id=idp.websockets),
-            html.Div(id=idp.dummy),
-        ]
-    )
+    dash_app.layout = layout()
 
     hashval = time.time()
 
