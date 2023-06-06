@@ -5,8 +5,15 @@ import logging
 from urllib.parse import urlparse, parse_qs
 
 
-class SocketServerPubSub:
-    topics: dict[str, set[Websocket]] = {}
+class PubSubServer:
+    subscribers: dict[str, set[Websocket]] = {}
+    topics: dict[str, bytes] = {}
+
+    @classmethod
+    async def publish(cls, topic: str, message: bytes | str):
+        cls.topics[topic] = message
+        for subscriber in PubSubServer.subscribers.get(topic, []):
+            await subscriber.send(message)
 
 
 @cbm.websocket("/pubsub")
@@ -18,14 +25,15 @@ async def socket_handler():
     query = parse_qs(url_p.query, keep_blank_values=True)
 
     for sub in query.get("sub", []):
-        SocketServerPubSub.topics.setdefault(sub, set()).add(this_ws)
+        PubSubServer.subscribers.setdefault(sub, set()).add(this_ws)
+        if sub in PubSubServer.topics:
+            await this_ws.send(PubSubServer.topics[sub])
 
     try:
         while True:
             mdata = await this_ws.receive()
-            for pub in query.get("pub", []):
-                for subscriber in SocketServerPubSub.topics.get(pub, []):
-                    await subscriber.send(mdata)
+            for topic_pub in query.get("pub", []):
+                await PubSubServer.publish(topic_pub, mdata)
 
     except asyncio.CancelledError as e:
         msg = f"websocket cancelled {str(e)}"
@@ -37,5 +45,5 @@ async def socket_handler():
         raise value_error
 
     finally:
-        for subscribers in SocketServerPubSub.topics.values():
+        for subscribers in PubSubServer.subscribers.values():
             subscribers.discard(this_ws)

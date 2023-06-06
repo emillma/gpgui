@@ -12,10 +12,10 @@ CLOSED = 3
 
 @dataclass
 class Message(CbTypeBase):
-    data: str
-    origin: str
-    isTrusted: bool
-    timeStamp: float
+    data: str = field(default=None)
+    origin: str = field(default=None)
+    isTrusted: bool = field(default=None)
+    timeStamp: float = field(default=None)
 
 # @dataclass
 # class SocketData(CbTypeBase):

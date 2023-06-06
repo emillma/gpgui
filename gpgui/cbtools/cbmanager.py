@@ -65,10 +65,18 @@ class CbManager:
     background_tasks: list[WhileRunning] = []
 
     @classmethod
-    def callback(cls, *outputs, prevent_initial_call=False, **kwargs):
+    def callback(
+        cls,
+        *outputs,
+        prevent_initial_call=False,
+        running=None,
+        background=None,
+        **kwargs,
+    ):
         assert cls.registered is False
 
         kwargs["prevent_initial_call"] = prevent_initial_call
+
 
         def decorator(func):
             params = signature(func).parameters
