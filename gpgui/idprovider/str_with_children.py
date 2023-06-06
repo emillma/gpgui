@@ -32,12 +32,12 @@ class StrWithChildren(str):
 
         return Input(id_, prop)
 
-    def as_output(self, prop=None):
+    def as_output(self, prop=None, allow_duplicate=False):
         if not prop:
             id_, _, prop = self.rpartition("-")
         else:
             id_ = self
-        return Output(id_, prop)
+        return Output(id_, prop, allow_duplicate=allow_duplicate)
 
     def as_state(self, prop=None):
         if not prop:

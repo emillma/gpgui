@@ -18,20 +18,20 @@ from dash_extensions.enrich import (
 #     ...
 
 
-class MyDash(DashProxy, QuartDash):
+class MyDash(QuartDash):
     def __init__(self, *args, **kwargs):
         super().__init__(
             *args,
-            transforms=[
-                # TriggerTransform(),
-                # LogTransform(),
-                MultiplexerTransform(),
-                NoOutputTransform(),
-                # CycleBreakerTransform(),
-                # BlockingCallbackTransform(),
-                # ServersideOutputTransform(**output_defaults),
-                # OperatorTransform(),
-            ],
+            # transforms=[
+            #     # TriggerTransform(),
+            #     # LogTransform(),
+            #     # MultiplexerTransform(),
+            #     # NoOutputTransform(),
+            #     # CycleBreakerTransform(),
+            #     # BlockingCallbackTransform(),
+            #     # ServersideOutputTransform(**output_defaults),
+            #     # OperatorTransform(),
+            # ],
             **kwargs
         )
         self.loop = asyncio.new_event_loop()

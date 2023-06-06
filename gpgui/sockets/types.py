@@ -10,12 +10,14 @@ CLOSED = 3
 
 # T = TypeVar("T", bound="SocketData")
 
+
 @dataclass
 class Message(CbTypeBase):
-    data: str = field(default=None)
+    data: str | bytes = field(default=None)
     origin: str = field(default=None)
     isTrusted: bool = field(default=None)
     timeStamp: float = field(default=None)
+
 
 # @dataclass
 # class SocketData(CbTypeBase):
@@ -61,5 +63,3 @@ class Message(CbTypeBase):
 #     type = "publish"
 #     data: str | dict | list
 #     source: str | None
-
-

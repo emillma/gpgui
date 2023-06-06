@@ -12,7 +12,8 @@ class ProcessWrapped:
         self.topic_output = f"proc_{file.stem}_out"
         self.topic_status = f"proc_{file.stem}_status"
         self.lines = []
-        self.event = asyncio.Event()
+        self.message_event = asyncio.Event()
+        self.done=False
         self.tasks: list[asyncio.Task] = []
         self.started = False
         
@@ -37,28 +38,29 @@ class ProcessWrapped:
         await PubSubServer.publish(self.topic_status, "running")
 
     async def stop(self):
-        self.proc.terminate()
         try:
+            self.proc.terminate()
             await asyncio.wait_for(self.proc.wait(), timeout=5)
         except asyncio.TimeoutError:
             self.proc.kill()
-        for task in self.tasks:
-            task.cancel()
         await PubSubServer.publish(self.topic_status, "stopped")
             
     async def _wait(self):
         await self.proc.wait()
+        self.done=True
         await PubSubServer.publish(self.topic_status, "stopped")
+        for task in self.tasks[:-1]:
+            task.cancel()
         
     async def _stream_reader_task(self, stream: asyncio.StreamReader):
         async for line in stream:
             self.lines = (self.lines + line.decode().splitlines())[-30:]
-            self.event.set()
+            self.message_event.set()
             # self.event.clear()
 
     async def _publish(self, extra: float = 0.1):
         while True:
-            await self.event.wait()
-            self.event.clear()
+            await self.message_event.wait()
+            self.message_event.clear()
             await PubSubServer.publish(self.topic_output, "\n".join(self.lines))
             await asyncio.sleep(extra)

@@ -7,7 +7,10 @@ class ProcessManager:
 
     @classmethod
     async def start_process(cls, file: Path):
-        if not file in cls.procs:
+        if not (proc := cls.procs.get(file, None)):
+            cls.procs[file] = ProcessWrapped(file)
+            await cls.procs[file].start()
+        elif proc.done:
             cls.procs[file] = ProcessWrapped(file)
             await cls.procs[file].start()
 
