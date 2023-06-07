@@ -1,3 +1,4 @@
+import asyncio
 from pathlib import Path
 from .process_wrapped import ProcessWrapped
 
@@ -18,3 +19,8 @@ class ProcessManager:
     async def stop_process(cls, file: Path):
         if proc := cls.procs.pop(file, None):
             await proc.stop()
+
+    @classmethod
+    async def ensure_stopped_in(cls, file: Path, delay: float):
+        if proc := cls.procs.get(file, None):
+            await proc.ensure_stoped_in(delay)

@@ -12,7 +12,7 @@ class PubSubServer:
     @classmethod
     async def publish(cls, topic: str, message: bytes | str):
         cls.topics[topic] = message
-        for subscriber in PubSubServer.subscribers.get(topic, []):
+        for subscriber in list(PubSubServer.subscribers.get(topic, [])):
             await subscriber.send(message)
 
 

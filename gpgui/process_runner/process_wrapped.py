@@ -5,18 +5,24 @@ from gpgui.sockets import PubSubServer
 
 
 class ProcessWrapped:
-    proc: Process
-
     def __init__(self, file: Path):
         self.file = file
         self.topic_output = f"proc_{file.stem}_out"
         self.topic_status = f"proc_{file.stem}_status"
         self.lines = []
         self.message_event = asyncio.Event()
-        self.done=False
         self.tasks: list[asyncio.Task] = []
-        self.started = False
-        
+        self.refs = set()
+        self.proc = None
+
+    @property
+    def done(self):
+        return self.proc.returncode is not None
+
+    @property
+    def started(self):
+        return self.proc is not None
+
     async def start(self):
         if self.started:
             return
@@ -33,8 +39,6 @@ class ProcessWrapped:
             asyncio.create_task(self._publish()),
             asyncio.create_task(self._wait()),
         ]
-        
-        self.started = True
         await PubSubServer.publish(self.topic_status, "running")
 
     async def stop(self):
@@ -44,14 +48,22 @@ class ProcessWrapped:
         except asyncio.TimeoutError:
             self.proc.kill()
         await PubSubServer.publish(self.topic_status, "stopped")
-            
+
+    async def ensure_stoped_in(self, delay):
+        async def innter():
+            await asyncio.sleep(delay)
+            if not self.proc.returncode is None:
+                self.proc.kill()
+                await PubSubServer.publish(self.topic_status, "stopped")
+
+        self.refs.add(asyncio.create_task(innter()))
+
     async def _wait(self):
         await self.proc.wait()
-        self.done=True
         await PubSubServer.publish(self.topic_status, "stopped")
         for task in self.tasks[:-1]:
             task.cancel()
-        
+
     async def _stream_reader_task(self, stream: asyncio.StreamReader):
         async for line in stream:
             self.lines = (self.lines + line.decode().splitlines())[-30:]
